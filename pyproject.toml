@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opensearch-optic"
+version = "0.1.0"
+description = "Opensearch Tools for Indices and Clusters"
+readme = "README.md"
+authors = [
+    {name = "Seth Lippman", email = "seth.lippman@oracle.com"},
+    {name = "Franklin Freita", email = "franklin.freitas.de.sousa@oracle.com"},
+    {name = "Brandon Cisneros", email = "brandon.cisneros@oracle.com"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "click==8.1.7",
+    "requests==2.32.3"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+urls = { "Homepage" = "https://github.com/yourusername/mycli" }
+
+[project.optional-dependencies]
+dev = [
+    "certifi==2024.6.2",
+    "charset-normalizer==3.3.2",
+    "idna==3.7",
+    "requests==2.32.3",
+    "urllib3==2.2.1",
+    "setuptools",
+    "pytest",
+    "black",
+    "flake8",
+    "flake8-bandit",
+    "flake8-bugbear",
+    "flake8-builtins",
+    "flake8-comprehensions",
+    "flake8-eradicate",
+    "flake8-implicit-str-concat",
+    "flake8-per-file-ignores",
+    "flake8-print",
+    "isort",
+    "pep8-naming",
+]
+
+[tool.setuptools.packages]
+find = {where = ["src"]}
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[project.scripts]
+optic = "optic.cli:cli"
+
+[tool.flake8]
+ignore = ["T201"]
+per-file-ignores = { "tests/*" = ["S101"] }
+exclude = [".git", "__pycache__", "build", "dist"]

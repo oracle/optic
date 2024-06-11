@@ -1,0 +1,32 @@
+# Python Virtual Environments
+.env
+.venv
+env/
+venv/
+
+# Distribution / packaging
+*.egg-info
+*.pyc
+
+# pyenv
+.python-version
+
+# PyCharm #
+.idea
+
+# Visual Studio Code
+.vscode/
+.history/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Desktop.ini
+Thumbs.db
