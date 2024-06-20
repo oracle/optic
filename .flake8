@@ -1,5 +1,5 @@
 [flake8]
-ignore = T201
+ignore = T201, W503
 per-file-ignores =
     tests/*: S101
 exclude =

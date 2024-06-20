@@ -15,7 +15,9 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "click==8.1.7",
-    "requests==2.32.3"
+    "requests==2.32.3",
+    "terminaltables==3.1.10",
+    "urllib3==2.2.1"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -57,6 +59,6 @@ find = {where = ["src"]}
 optic = "optic.cli:cli"
 
 [tool.flake8]
-ignore = ["T201"]
+ignore = ["T201", "W503"]
 per-file-ignores = { "tests/*" = ["S101"] }
 exclude = [".git", "__pycache__", "build", "dist"]

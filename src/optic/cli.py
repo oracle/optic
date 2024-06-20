@@ -1,6 +1,10 @@
 import click
 
-from optic.cluster.cluster_info import get_cluster_info
+from optic.cluster.cluster_service import (
+    get_cluster_list,
+    package_cluster_info,
+    print_cluster_info,
+)
 from optic.index.index_info import get_index_info
 
 
@@ -10,10 +14,23 @@ def cli():
 
 
 @cli.command()
-@click.option("--name", required=True, help="Cluster name")
-def cluster_info(name):
-    """Get Cluster information"""
-    print(get_cluster_info(name))
+@click.option(
+    "--config-path",
+    default="~/.optic/optic-config.json",
+    help="specify a non-default configuration file path"
+    "(default is ~/.optic/optic-config.json",
+)
+@click.option(
+    "--byte-type",
+    default="gb",
+    type=click.Choice(["mb", "gb"], case_sensitive=False),
+    help="specify the mb or gb type for storage calculation (default is gb)",
+)
+def cluster_info(config_path, byte_type):
+    """Prints status of all clusters in configuration file"""
+    print_cluster_info(
+        package_cluster_info(get_cluster_list(config_path, byte_type))
+    )
 
 
 @cli.command()
