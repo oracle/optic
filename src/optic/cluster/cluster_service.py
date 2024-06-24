@@ -1,5 +1,6 @@
-from optic.cluster.clusters import Cluster
+from optic.cluster.cluster import Cluster
 from optic.common.config import Config
+from optic.common.exceptions import ConfigurationFileError
 
 from terminaltables import AsciiTable
 
@@ -15,15 +16,23 @@ def get_cluster_list(config_path, byte_type) -> [Cluster]:
     config_info = Config(config_path)
     cluster_list = []
     for env, auth_data in config_info.clusters.items():
-        cluster_list.append(
-            Cluster(
-                base_url=auth_data["url"],
-                creds={"username": auth_data["username"], "password": auth_data["password"]},
-                verify_ssl=auth_data["verify_ssl"],
-                custom_name=env,
-                byte_type=byte_type,
+        try:
+            cluster_list.append(
+                Cluster(
+                    base_url=auth_data["url"],
+                    creds={
+                        "username": auth_data["username"],
+                        "password": auth_data["password"],
+                    },
+                    verify_ssl=auth_data["verify_ssl"],
+                    custom_name=env,
+                    byte_type=byte_type,
+                )
             )
-        )
+        except KeyError as e:
+            raise ConfigurationFileError(
+                "Improperly formatted fields in cluster " + env
+            ) from e
     return cluster_list
 
 

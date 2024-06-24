@@ -6,6 +6,7 @@ from optic.cluster.cluster_service import (
     print_cluster_info,
 )
 from optic.index.index_info import get_index_info
+from optic.common.exceptions import OpticError
 
 
 @click.group(help="optic: Opensearch Tools for Indices and Cluster")
@@ -28,9 +29,13 @@ def cli():
 )
 def cluster_info(config_path, byte_type):
     """Prints status of all clusters in configuration file"""
-    print_cluster_info(
-        package_cluster_info(get_cluster_list(config_path, byte_type))
-    )
+    try:
+        print_cluster_info(
+            package_cluster_info(get_cluster_list(config_path, byte_type))
+        )
+    except OpticError as e:
+        print(e)
+        exit(1)
 
 
 @cli.command()

@@ -1,4 +1,5 @@
 from optic.common.api import OpenSearchAction
+from optic.common.exceptions import DataError
 
 
 class ClusterHealth:
@@ -10,7 +11,7 @@ class Cluster:
     def __init__(
         self,
         base_url="",
-        creds={},
+        creds=None,
         verify_ssl=True,
         custom_name="",
         byte_type="gb",
@@ -34,8 +35,10 @@ class Cluster:
                 used += int(disk["disk.used"])
                 total += int(disk["disk.total"])
         if total == 0:
-            print(f"Error in [{self.custom_name}] disk capacity calculation!")
-            exit(1)
+            raise DataError(
+                f"Error in [{self.custom_name}] disk capacity calculation"
+                "(Total disk capacity is 0 or null)"
+            )
         return int(round(100 * (float(used) / float(total))))
 
     @property
