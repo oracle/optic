@@ -2,11 +2,15 @@ import requests
 from requests.auth import HTTPBasicAuth
 import urllib3
 
+from optic.common.exceptions import APIError
+
 urllib3.disable_warnings()
 
 
 class OpenSearchAction:
-    def __init__(self, base_url="", usr="", pwd="", verify_ssl=True, query=""):
+    def __init__(
+        self, base_url="", usr="", pwd=None, verify_ssl=True, query=""
+    ):
         self.base_url = base_url
         self.usr = usr
         self.pwd = pwd
@@ -25,14 +29,18 @@ class OpenSearchAction:
                 auth=basic,
                 timeout=3,
             )
-            self._response.raise_for_status()
+            try:
+                self._response.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                raise APIError(str(err)) from err
             if (
                 self._response.headers["Content-Type"]
                 == "application/json; charset=UTF-8"
             ):
                 return self._response.json()
             else:
-                print("Unrecognized content type from call to " + self.query)
-                exit(1)
+                raise APIError(
+                    "Unrecognized content type from call to " + self.query
+                )
 
         return self._response
