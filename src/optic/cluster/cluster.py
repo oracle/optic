@@ -68,8 +68,6 @@ class Cluster:
                 query="/_cat/allocation?h=disk.used,"
                 "disk.total&format=json&bytes=" + self.byte_type,
             )
-            self._storage_percent = self._calculate_storage_percent(
-                api.response
-            )
+            self._storage_percent = self._calculate_storage_percent(api.response)
 
         return self._storage_percent

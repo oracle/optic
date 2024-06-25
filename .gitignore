@@ -5,6 +5,7 @@ env/
 venv/
 
 # Distribution / packaging
+build
 *.egg-info
 *.pyc
 

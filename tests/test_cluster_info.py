@@ -41,10 +41,7 @@ class TestClusterClass:
         assert test_cluster.health.number_of_pending_tasks == 0
         assert test_cluster.health.number_of_in_flight_fetch == 0
         assert test_cluster.health.task_max_waiting_in_queue_mill == 0
-        assert (
-            test_cluster.health.active_shards_percent_as_number
-            == 56.79012345679012
-        )
+        assert test_cluster.health.active_shards_percent_as_number == 56.79012345679012
 
     def test_storage_percent(self):
         test_cluster = Cluster(custom_name="test_cluster")

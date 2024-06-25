@@ -57,8 +57,3 @@ find = {where = ["src"]}
 
 [project.scripts]
 optic = "optic.cli:cli"
-
-[tool.flake8]
-ignore = ["T201", "W503"]
-per-file-ignores = { "tests/*" = ["S101"] }
-exclude = [".git", "__pycache__", "build", "dist"]
