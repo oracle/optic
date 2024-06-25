@@ -8,9 +8,7 @@ urllib3.disable_warnings()
 
 
 class OpenSearchAction:
-    def __init__(
-        self, base_url="", usr="", pwd=None, verify_ssl=True, query=""
-    ):
+    def __init__(self, base_url="", usr="", pwd=None, verify_ssl=True, query=""):
         self.base_url = base_url
         self.usr = usr
         self.pwd = pwd
@@ -39,8 +37,6 @@ class OpenSearchAction:
             ):
                 return self._response.json()
             else:
-                raise APIError(
-                    "Unrecognized content type from call to " + self.query
-                )
+                raise APIError("Unrecognized content type from call to " + self.query)
 
         return self._response

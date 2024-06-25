@@ -19,8 +19,7 @@ class Config:
             if type(e) is json.decoder.JSONDecodeError:
                 config_file.close()
             raise ConfigurationFileError(
-                "Non-existent or improperly formatted configuration file at "
-                + abs_path
+                "Non-existent or improperly formatted configuration file at " + abs_path
             ) from e
         return json_data
 
