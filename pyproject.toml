@@ -47,6 +47,7 @@ dev = [
     "flake8-print",
     "isort",
     "pep8-naming",
+    "pre-commit"
 ]
 
 [tool.setuptools.packages]
@@ -54,6 +55,9 @@ find = {where = ["src"]}
 
 [tool.setuptools.package-dir]
 "" = "src"
+
+[tool.isort]
+profile = "black"
 
 [project.scripts]
 optic = "optic.cli:cli"
