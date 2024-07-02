@@ -2,13 +2,13 @@ class OpticError(Exception):
     pass
 
 
-class ConfigurationFileError(OpticError):
+class OpticConfigurationFileError(OpticError):
     pass
 
 
-class APIError(OpticError):
+class OpticAPIError(OpticError):
     pass
 
 
-class DataError(OpticError):
+class OpticDataError(OpticError):
     pass

@@ -15,6 +15,9 @@ build
 # PyCharm #
 .idea
 
+# pytest
+.coverage
+
 # Visual Studio Code
 .vscode/
 .history/
