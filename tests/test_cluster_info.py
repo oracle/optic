@@ -1,4 +1,5 @@
 from optic.cluster.cluster import Cluster, ClusterHealth
+from optic.cluster.cluster_service import get_cluster_info
 
 
 class TestClusterClass:
@@ -40,7 +41,7 @@ class TestClusterClass:
         assert test_cluster.health.delayed_unassigned_shards == 0
         assert test_cluster.health.number_of_pending_tasks == 0
         assert test_cluster.health.number_of_in_flight_fetch == 0
-        assert test_cluster.health.task_max_waiting_in_queue_mill == 0
+        assert test_cluster.health.task_max_waiting_in_queue_millis == 0
         assert test_cluster.health.active_shards_percent_as_number == 56.79012345679012
 
     def test_storage_percent(self):
@@ -56,3 +57,35 @@ class TestClusterClass:
             {"disk.used": "22", "disk.total": 334},
         ]
         assert test_cluster._calculate_storage_percent(sim_disk_response) == 34
+
+
+class TestClusterService:
+    def test_get_cluster_list(self):
+        # TODO
+        assert 1 == 1
+
+    def test_get_cluster_info(self):
+        test_cluster_1 = Cluster(custom_name="test_cluster_1")
+        test_cluster_1._storage_percent = 17
+        test_cluster_1._health = ClusterHealth(**{"status": "green"})
+        test_cluster_2 = Cluster(custom_name="test_cluster_2")
+        test_cluster_2._storage_percent = 74
+        test_cluster_2._health = ClusterHealth(**{"status": "yellow"})
+        test_cluster_3 = Cluster(custom_name="test_cluster_3")
+        test_cluster_3._storage_percent = 59
+        test_cluster_3._health = ClusterHealth(**{"status": "yellow"})
+        cluster_list = [test_cluster_1, test_cluster_2, test_cluster_3]
+        cluster_dict = get_cluster_info(cluster_list)
+        assert cluster_dict[0]["name"] == "test_cluster_1"
+        assert cluster_dict[1]["name"] == "test_cluster_2"
+        assert cluster_dict[2]["name"] == "test_cluster_3"
+        assert cluster_dict[0]["status"] == "green"
+        assert cluster_dict[1]["status"] == "yellow"
+        assert cluster_dict[2]["status"] == "yellow"
+        assert cluster_dict[0]["usage"] == 17
+        assert cluster_dict[1]["usage"] == 74
+        assert cluster_dict[2]["usage"] == 59
+
+    def test_print_cluster_info(self):
+        # TODO
+        assert 1 == 1

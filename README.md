@@ -11,7 +11,9 @@ Python **>3.12** is <mark>required</mark> to run the ```OPTIC``` toolset.
 
 Python package manager pip **>21.3** is <mark>required</mark>
 
-A properly formatted configuration file is <mark>required</mark>
+A properly formatted cluster configuration file is <mark>required</mark>
+
+A properly formatted settings file is <mark>required</mark>
 
 
 ### To check if Python 3 is installed, follow these steps:
@@ -50,10 +52,10 @@ If you see an error message, you can install Python using the official Python we
 If pip is not installed correctly, it can be installed using the official instructions
 https://pip.pypa.io/en/stable/installation/
 
-### Configuration File Setup
-* A properly formatted configuration file is necessary to use the OPTIC toolset.
-* The default path for this configuration file is ```~/.optic/optic-config.json```
-* A custom configuration file path can be specified using the Command Line Interface (detailed later in this README)
+### Cluster Configuration File Setup
+* A properly formatted cluster configuration file is necessary to use the OPTIC toolset.
+* The default path for this configuration file is ```~/.optic/cluster-config.json```
+* A custom configuration file path can be specified in the settings file or using the Command Line Interface (detailed later in this README)
 * #### The Configuration File allows users to easily store networking and authentication information for communicating with their OpenSearch Clusters.
 * #### It also allows users to collect clusters into custom groups that can simplify cluster information gathering and administration
 * #### A sample configuration file is provided below:
@@ -100,6 +102,25 @@ https://pip.pypa.io/en/stable/installation/
 
 
 ```
+### Settings File Setup
+* A properly formatted settings file is necessary to use the OPTIC toolset.
+* The default path for this configuration file is ```~/.optic/optic-settings.yaml```
+* A custom settings file path can be specified using the Command Line Interface (detailed later in this README)
+* #### The Settings File allows users to easily preferences for their OPTIC tools.
+* #### A sample settings file is provided below:
+```yaml
+default_cluster_config_file_path: '~/.optic/cluster-config.json'
+
+default_cluster_info_byte_type: 'gb'
+
+default_index_search_pattern: '*'
+default_index_type_patterns:
+  ISM: '(.*)-ism-(\d{6})$'
+  ISM_MALFORMED: '(.*)-ism$'
+  SYSTEM: '(^\..*)$'
+
+```
+* It is recommended to put all settings string values in single quotes to prevent escape characters from causing unintended behavior
 
 ## Installation
 
@@ -111,6 +132,10 @@ optic <tool_name> <command_line_options>
 For a full list of OPTIC tools, enter:
 ```
 optic --help
+```
+To initialize OPTIC with an alternate settings file path, enter:
+```
+optic --settings-path <custom_file_path> <tool_name>
 ```
 For a full list of the command line options available for each tool, enter:
 ```

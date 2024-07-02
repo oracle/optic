@@ -1,66 +1,68 @@
-from optic.cluster.cluster import Cluster
-from optic.common.config import Config
-from optic.common.exceptions import ConfigurationFileError
-
 from terminaltables import AsciiTable
 
+from optic.cluster.cluster import Cluster
+from optic.common.config import ClusterConfig
+from optic.common.exceptions import OpticConfigurationFileError
 
-def get_cluster_list(config_path, byte_type) -> [Cluster]:
+
+def get_cluster_list(config_path, byte_type) -> list:
     """
-    Parses file for cluster configuration information
+    Uses ClusterConfig information to create list of clusters of interest
     :param config_path: path to optic config file
     :param byte_type: desired byte type for storage calculation
     :return: list of Cluster objects w/ auth information
-    :rtype: list of Cluster objects
+    :rtype: list
     """
-    config_info = Config(config_path)
+    config_info = ClusterConfig(config_path)
     cluster_list = []
-    for env, auth_data in config_info.clusters.items():
+    for env, cluster_data in config_info.clusters.items():
         try:
             cluster_list.append(
                 Cluster(
-                    base_url=auth_data["url"],
+                    base_url=cluster_data["url"],
                     creds={
-                        "username": auth_data["username"],
-                        "password": auth_data["password"],
+                        "username": cluster_data["username"],
+                        "password": cluster_data["password"],
                     },
-                    verify_ssl=auth_data["verify_ssl"],
+                    verify_ssl=cluster_data["verify_ssl"],
                     custom_name=env,
                     byte_type=byte_type,
                 )
             )
         except KeyError as e:
-            raise ConfigurationFileError(
+            raise OpticConfigurationFileError(
                 "Improperly formatted fields in cluster " + env
             ) from e
     return cluster_list
 
 
-def package_cluster_info(cluster_list) -> {}:
+def get_cluster_info(cluster_list) -> list:
     """
-    Retrieves and packages Cluster information into a JSON object
+    Retrieves and packages Cluster information into a list of dictionaries
     :param cluster_list: list of Cluster objects
-    :return: JSON object containing cluster information
-    :rtype: dict
+    :return: list of dictionaries containing cluster information
+    :rtype: list
     """
-    clusters_dict = {}
+    clusters_dicts = []
     for cluster in cluster_list:
         usage = cluster.storage_percent
         status = cluster.health.status
-        clusters_dict[cluster.custom_name] = {"status": status, "usage": usage}
-    return clusters_dict
+        clusters_dicts.append(
+            {"name": cluster.custom_name, "status": status, "usage": usage}
+        )
+    return clusters_dicts
 
 
-def print_cluster_info(json_object) -> None:
+def print_cluster_info(cluster_dicts) -> None:
     """
     Print Cluster Info
-    :param dict json_object: json object of cluster information
+    :param cluster_dicts: dictionary of cluster information
     :return: None
     :rtype: None
     """
     print_data = [["ENV", "STATUS", "STORAGE USE (%)"]]
-    for env, stats in json_object.items():
-        print_data.append([env, stats["status"], stats["usage"]])
+    for stats in cluster_dicts:
+        print_data.append([stats["name"], stats["status"], stats["usage"]])
 
     table = AsciiTable(print_data)
     table.title = "Cluster Info"
