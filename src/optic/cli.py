@@ -3,6 +3,7 @@ import click
 from optic.cluster.cluster_service import get_cluster_info, print_cluster_info
 from optic.common.config import ClusterConfig, Settings, yaml_load
 from optic.common.exceptions import OpticError
+from optic.common.initialize import initialize_optic
 from optic.index.index_service import (
     filter_and_sort_indices,
     get_index_info,
@@ -14,7 +15,11 @@ def default_from_settings(setting_name):
     class OptionDefaultFromSettings(click.Option):
         def get_default(self, ctx, call=True):
             try:
-                self.default = ctx.obj[setting_name]
+                if not ctx.obj:
+                    # Dummy so shell completion works before setting Settings context
+                    self.default = None
+                else:
+                    self.default = ctx.obj[setting_name]
             except KeyError:
                 print(setting_name, "not found in specified settings file")
                 exit(1)
@@ -33,9 +38,38 @@ def default_from_settings(setting_name):
 @click.pass_context
 def cli(ctx, settings):
     ctx.ensure_object(dict)
+    ctx.obj["settings_file_path"] = settings
+
+
+@cli.command()
+@click.option(
+    "--cluster-config-setup",
+    prompt="Would you like to create a cluster configuration  "
+    "file at ~/.optic/cluster-config.yaml?",
+    type=click.Choice(["y", "N"], case_sensitive=False),
+    help="Prompts user for permission to create cluster config file",
+)
+@click.option(
+    "--settings-setup",
+    prompt="Would you like to set up a settings file at ~/.optic/optic-settings.yaml?",
+    type=click.Choice(["y", "N"], case_sensitive=False),
+    help="Prompts user for permission to create cluster config file",
+)
+@click.option(
+    "--shell-setup",
+    prompt="Would you like to set up shell completion?  NOTE: This will involve  "
+    "creating a file in ~/.optic directory and appending a command to source it  "
+    "to your shell configuration file",
+    type=click.Choice(["y", "N"], case_sensitive=False),
+    help="Prompts user for permission to setup shell completion",
+)
+def init(cluster_config_setup, settings_setup, shell_setup):
+    """Initialize OPTIC settings,  configuration, and shell completion"""
     try:
-        settings = Settings(yaml_load(settings))
-        ctx.obj = settings.fields
+        config_bool = cluster_config_setup.lower() == "y"
+        settings_bool = settings_setup.lower() == "y"
+        shell_bool = shell_setup.lower() == "y"
+        initialize_optic(config_bool, settings_bool, shell_bool)
     except OpticError as e:
         print(e)
         exit(1)
@@ -44,20 +78,16 @@ def cli(ctx, settings):
 @cli.group(help="cluster: Utilities relating to clusters")
 @click.pass_context
 def cluster(ctx):
-    pass
+    ctx.ensure_object(dict)
+    try:
+        settings = Settings(yaml_load(ctx.obj["settings_file_path"]))
+        ctx.obj = settings.fields
+    except OpticError as e:
+        print(e)
+        exit(1)
 
 
 @cluster.command()
-@click.option(
-    "-c",
-    "--clusters",
-    multiple=True,
-    default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
-)
 @click.option(
     "-c",
     "--clusters",
@@ -100,7 +130,13 @@ def info(ctx, clusters, cluster_config, byte_type):
 @cli.group(help="index: Utilities relating to indices")
 @click.pass_context
 def index(ctx):
-    pass
+    ctx.ensure_object(dict)
+    try:
+        settings = Settings(yaml_load(ctx.obj["settings_file_path"]))
+        ctx.obj = settings.fields
+    except OpticError as e:
+        print(e)
+        exit(1)
 
 
 @index.command()
@@ -233,7 +269,3 @@ def info(
     except OpticError as e:
         print(e)
         exit(1)
-
-
-if __name__ == "__main__":
-    cli(obj={})
