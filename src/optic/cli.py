@@ -48,6 +48,16 @@ def cli(ctx, settings):
 
 @cli.command()
 @click.option(
+    "-c",
+    "--clusters",
+    multiple=True,
+    default=(),
+    help="Specify cluster groups and/or specific clusters to query. "
+    "Default behavior queries all clusters present in config file. "
+    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
+    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+)
+@click.option(
     "--cluster-config",
     cls=default_from_settings("default_cluster_config_file_path"),
     help="specify a non-default configuration file path "
@@ -61,10 +71,10 @@ def cli(ctx, settings):
     "(default is default_cluster_info_byte_type in settings yaml file)",
 )
 @click.pass_context
-def cluster_info(ctx, cluster_config, byte_type):
+def cluster_info(ctx, clusters, cluster_config, byte_type):
     """Prints status of all clusters in configuration file"""
     try:
-        cluster_list = get_cluster_list(cluster_config, byte_type)
+        cluster_list = get_cluster_list(clusters, cluster_config, byte_type)
         cluster_info_dict = get_cluster_info(cluster_list)
         print_cluster_info(cluster_info_dict)
     except OpticError as e:
@@ -96,8 +106,8 @@ def cluster_info(ctx, cluster_config, byte_type):
     help="specify a non-default configuration file path "
     "(default is default_cluster_config_file_path field in settings yaml file)",
 )
-@click.option("--min-age", help="minimum age of index")
-@click.option("--max-age", help="maximum age of index")
+@click.option("--min-age", type=int, help="minimum age of index")
+@click.option("--max-age", type=int, help="maximum age of index")
 @click.option(
     "--min-index-size",
     help="filter by minimum size of index (accepts kb, mb, gb, tb) Eg: 1mb",
@@ -116,8 +126,8 @@ def cluster_info(ctx, cluster_config, byte_type):
     help="filter by maximum average size of index primary shards "
     "(accepts kb, mb, gb, tb) Eg: 10gb",
 )
-@click.option("--min-doc-count", help="filter by minimum number of documents")
-@click.option("--max-doc-count", help="filter by maximum number of documents")
+@click.option("--min-doc-count", type=int, help="filter by minimum number of documents")
+@click.option("--max-doc-count", type=int, help="filter by maximum number of documents")
 @click.option(
     "-t",
     "--type-filter",

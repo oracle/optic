@@ -1,10 +1,11 @@
 # OPTIC (Opensearch Tools for Indices and Cluster)
 
-This project contains utilities used by PDAF OpenSearch Engineers to troubleshoot and make changes to OpenSearch clusters
+This project contains utilities for OpenSearch Engineers to troubleshoot and make changes to OpenSearch clusters
 
 ## Contents
 
-- cluster_info:  Tool displaying key information (Health Status, Storage Percentage) about clusters 
+- cluster_info:  Tool displaying key information (Health Status, Storage Percentage) about clusters
+- index_info:  Tool displaying key information (Name, Age, Document Count, Index Size, etc.) about indices
 
 ## Requirements
 Python **>3.12** is <mark>required</mark> to run the ```OPTIC``` toolset.
