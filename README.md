@@ -55,51 +55,42 @@ https://pip.pypa.io/en/stable/installation/
 
 ### Cluster Configuration File Setup
 * A properly formatted cluster configuration file is necessary to use the OPTIC toolset.
-* The default path for this configuration file is ```~/.optic/cluster-config.json```
+* The default path for this configuration file is ```~/.optic/cluster-config.yaml``` (Can be defined in settings)
 * A custom configuration file path can be specified in the settings file or using the Command Line Interface (detailed later in this README)
 * #### The Configuration File allows users to easily store networking and authentication information for communicating with their OpenSearch Clusters.
 * #### It also allows users to collect clusters into custom groups that can simplify cluster information gathering and administration
 * #### A sample configuration file is provided below:
-```json
-{
-    "clusters": {
-        "cluster_1": {
-            "url" : "https://testurl.com:46",
-            "username": "my_username1",
-            "password": "my_password", 
-            "verify_ssl": true
-        },
-        "cluster_2": {
-            "url" : "https://myurl.com:9200",
-            "username": "my_username2",
-            "password": "****", 
-            "verify_ssl": false
-        },
-        "my_cluster": {
-            "url" : "https://onlineopensearchcluster.com:634",
-            "username": "my_username3",
-            "password": "****", 
-            "verify_ssl": true
-        },
-        "cluster_3": {
-            "url" : "https://anotherurl.com:82",
-            "username": "my_username4",
-            "password": "****", 
-            "verify_ssl": true
-        }
-    },
-    "groups": {
-        "my_group": [
-            "cluster_1",
-            "cluster_2",
-            "cluster_3"
-        ],
-        "g2": [
-            "cluster_1",
-            "my_cluster"
-        ]
-    }
-}
+```yaml
+clusters:
+  'cluster_1':
+    url: 'https://testurl.com:46'
+    username: 'my_username1'
+    password: 'my_password'
+    verify_ssl: true
+  'cluster_2':
+    url: 'https://myurl.com:9200'
+    username: 'my_username2'
+    password: '****'
+    verify_ssl: false
+  'my_cluster':
+    url: 'https://onlineopensearchcluster.com:634'
+    username: 'my_username3'
+    password: '****'
+    verify_ssl: true
+  'cluster_3':
+    url: 'https://anotherurl.com:82'
+    username: 'my_username4'
+    password: '****'
+    verify_ssl: true
+groups:
+  'my_group':
+    - 'cluster_1'
+    - 'cluster_2'
+    - 'cluster_3'
+  'g2':
+    - 'cluster_1'
+    - 'my_cluster'
+
 
 
 ```
@@ -110,7 +101,7 @@ https://pip.pypa.io/en/stable/installation/
 * #### The Settings File allows users to easily preferences for their OPTIC tools.
 * #### A sample settings file is provided below:
 ```yaml
-default_cluster_config_file_path: '~/.optic/cluster-config.json'
+default_cluster_config_file_path: '~/.optic/cluster-config.yaml'
 
 default_cluster_info_byte_type: 'gb'
 
