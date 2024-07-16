@@ -1,3 +1,9 @@
+# ** OPTIC version 1.0.
+# **
+# ** Copyright (c) 2024 Oracle Corporation
+# ** Licensed under the Universal Permissive License v 1.0
+# ** as shown at https://oss.oracle.com/licenses/upl/
+
 import re
 from datetime import datetime, timezone
 
@@ -16,7 +22,14 @@ class IndexInfo:
         self.index_types_dict = index_types_dict
         self._set_properties_from_response(**kwargs)
 
-    def _set_properties_from_response(self, **kwargs):
+    def _set_properties_from_response(self, **kwargs) -> None:
+        """
+        Dynamically sets attributes based off API Response dictionary
+
+        :param dict kwargs: dictionary with response attributes
+        :return: None
+        :rtype: None
+        """
         for key, value in kwargs.items():
             if isinstance(value, str) and value.isdigit():
                 value = int(value)
@@ -25,6 +38,7 @@ class IndexInfo:
     def _calculate_age(self) -> int:
         """
         Calculate the age of the index in days
+
         :return: age in days
         :rtype: int
         """
@@ -36,6 +50,7 @@ class IndexInfo:
     def _calculate_type(self) -> str:
         """
         Calculate the type of the index
+
         :return: index type string
         :rtype: str
         """

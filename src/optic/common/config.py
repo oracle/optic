@@ -1,3 +1,9 @@
+# ** OPTIC version 1.0.
+# **
+# ** Copyright (c) 2024 Oracle Corporation
+# ** Licensed under the Universal Permissive License v 1.0
+# ** as shown at https://oss.oracle.com/licenses/upl/
+
 import os
 
 import yaml
@@ -6,11 +12,13 @@ from optic.cluster.cluster import Cluster
 from optic.common.exceptions import OpticConfigurationFileError
 
 
-def yaml_load(file_path) -> list:
+def yaml_load(file_path) -> dict:
     """
     Parses yaml file for information
-    return: Dictionary with information
+
+    return: File information as Python object
     rtype: dict
+    :raises OpticConfigurationFileError: if yaml file cannot be parsed
     """
     try:
         abs_path = os.path.expanduser(file_path)

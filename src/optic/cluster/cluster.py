@@ -1,3 +1,9 @@
+# ** OPTIC version 1.0.
+# **
+# ** Copyright (c) 2024 Oracle Corporation
+# ** Licensed under the Universal Permissive License v 1.0
+# ** as shown at https://oss.oracle.com/licenses/upl/
+
 from optic.common.api import OpenSearchAction
 from optic.common.exceptions import OpticDataError
 from optic.index.index import Index
@@ -7,7 +13,14 @@ class ClusterHealth:
     def __init__(self, **kwargs):
         self._set_properties_from_response(**kwargs)
 
-    def _set_properties_from_response(self, **kwargs):
+    def _set_properties_from_response(self, **kwargs) -> None:
+        """
+        Dynamically sets attributes based off API Response dictionary
+
+        :param dict kwargs: dictionary with response attributes
+        :return: None
+        :rtype: None
+        """
         for key, value in kwargs.items():
             if isinstance(value, str) and value.isdigit():
                 value = int(value)
@@ -40,9 +53,11 @@ class Cluster:
     def _calculate_storage_percent(self, disk_list) -> int:
         """
         Calculate the storage percentage of cluster in use
-        :param disk_list: dictionary of cluster disk information
+
+        :param dict disk_list: dictionary of cluster disk information
         :return: storage percentage (0-100)
         :rtype: int
+        :raises OpticDataError: if storage total is 0 or null
         """
         used = 0
         total = 0

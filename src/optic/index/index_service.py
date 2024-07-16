@@ -1,3 +1,9 @@
+# ** OPTIC version 1.0.
+# **
+# ** Copyright (c) 2024 Oracle Corporation
+# ** Licensed under the Universal Permissive License v 1.0
+# ** as shown at https://oss.oracle.com/licenses/upl/
+
 from terminaltables import AsciiTable
 
 from optic.common.exceptions import OpticDataError
@@ -6,9 +12,11 @@ from optic.common.exceptions import OpticDataError
 def parse_bytes(bytes_string) -> int | float:
     """
     Parses a memory amount string into an integer or float
-    :param bytes_string: memory amount string
+
+    :param str|float|int bytes_string: memory amount string
     :return: int or float with parsed memory amount
     :rtype: int | float
+    :raises OpticDataError: if the memory amount string format is not valid
     """
     if type(bytes_string) is float:
         return bytes_string
@@ -42,7 +50,8 @@ def parse_bytes(bytes_string) -> int | float:
 def parse_filters(filters) -> list:
     """
     Parses filter dictionary into list of lambdas for use with filter()
-    :param filters: dictionary with filter information
+
+    :param dict filters: dictionary with filter information
     :return: list of lambdas
     :rtype: list
     """
@@ -95,7 +104,8 @@ def parse_filters(filters) -> list:
 def parse_sort_by(sort_by) -> list:
     """
     Parses tuple of desired sort into list of lambdas for use as sort() keys
-    :param sort_by: tuple with desired sort types
+
+    :param tuple sort_by: tuple with desired sort types
     :return: list of lambdas
     :rtype: list
     """
@@ -126,8 +136,9 @@ def parse_sort_by(sort_by) -> list:
 def filter_index_list(index_list, lambda_list) -> list:
     """
     Filters index list based on lambda expressions provided
-    :param index_list: list of indexes
-    :param lambda_list: list of lambdas
+
+    :param list index_list: list of indexes
+    :param list lambda_list: list of lambdas
     :return: list of filtered indexes
     :rtype: list
     """
@@ -139,12 +150,12 @@ def filter_index_list(index_list, lambda_list) -> list:
 def sort_index_list(index_list, lambda_list) -> list:
     """
     Sorts index list based on lambda expressions provided
-    :param index_list: list of indexes
-    :param lambda_list: list of lambdas
+
+    :param list index_list: list of indexes
+    :param list lambda_list: list of lambdas
     :return: list of sorted indexes
     :rtype: list
     """
-
     for function in lambda_list:
         index_list.sort(key=function)
     return index_list
@@ -153,9 +164,10 @@ def sort_index_list(index_list, lambda_list) -> list:
 def filter_and_sort_indices(cluster_list, filters, sort_by) -> list:
     """
     Retrieves, filters, and sorts indexes from clusters
+
     :param cluster_list: list of clusters
-    :param filters: dictionary with filter information
-    :param sort_by: tuple with desired sort types
+    :param dict filters: dictionary with filter information
+    :param tuple sort_by: tuple with desired sort types
     :return: list of filtered indexes
     :rtype: list
     """
@@ -174,7 +186,8 @@ def filter_and_sort_indices(cluster_list, filters, sort_by) -> list:
 def get_index_info(index_list) -> list:
     """
     Retrieves and packages Index information into a list of dictionaries
-    :param index_list: list of Index objects
+
+    :param list index_list: list of Index objects
     :return: list of dictionaries containing index information
     :rtype: list
     """
@@ -198,12 +211,12 @@ def get_index_info(index_list) -> list:
 
 def print_index_info(index_dicts) -> None:
     """
-    Print Index Info
+    Prints Index Information
+
     :param list index_dicts: list of dictionaries of index information
     :return: None
     :rtype: None
     """
-
     print_data = [
         [
             "Index",

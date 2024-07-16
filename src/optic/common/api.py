@@ -1,3 +1,9 @@
+# ** OPTIC version 1.0.
+# **
+# ** Copyright (c) 2024 Oracle Corporation
+# ** Licensed under the Universal Permissive License v 1.0
+# ** as shown at https://oss.oracle.com/licenses/upl/
+
 import requests
 import urllib3
 from requests.auth import HTTPBasicAuth
