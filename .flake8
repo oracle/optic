@@ -1,5 +1,5 @@
 [flake8]
-ignore = T201, W503
+ignore = T201, W503, F811
 max-line-length = 88
 per-file-ignores =
     tests/*: S101

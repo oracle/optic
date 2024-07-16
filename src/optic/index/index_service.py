@@ -1,55 +1,6 @@
 from terminaltables import AsciiTable
 
-from optic.cluster.cluster import Cluster
-from optic.common.config import ClusterConfig
-from optic.common.exceptions import OpticConfigurationFileError, OpticDataError
-
-
-def get_clusters_and_groups(config_path, clusters, search_pattern, index_types) -> list:
-    """
-    Uses ClusterConfig information to create list of clusters of interest
-    :param config_path: path to config file
-    :param clusters: list of desired clusters and cluster groups
-    :param search_pattern: pattern to search for clusters
-    :param index_types: dictionary of desired index types {index_type_str : reg_ex_str}
-    :return: list of Cluster objects w/ auth information
-    :rtype: list
-    """
-    config_info = ClusterConfig(config_path)
-    clusters = list(clusters)
-    for group, group_clusters in config_info.groups.items():
-        if group in clusters:
-            clusters.extend(group_clusters)
-            clusters.remove(group)
-    clusters = list(set(clusters))
-    cluster_list = []
-    for cluster_name, cluster_data in config_info.clusters.items():
-        if (clusters == []) or (cluster_name in clusters):
-            try:
-                cluster_list.append(
-                    Cluster(
-                        base_url=cluster_data["url"],
-                        creds={
-                            "username": cluster_data["username"],
-                            "password": cluster_data["password"],
-                        },
-                        verify_ssl=cluster_data["verify_ssl"],
-                        custom_name=cluster_name,
-                        index_search_pattern=search_pattern,
-                        index_types_dict=index_types,
-                    )
-                )
-                if clusters:
-                    clusters.remove(cluster_name)
-                    if not clusters:
-                        break
-            except KeyError as e:
-                raise OpticConfigurationFileError(
-                    "Improperly formatted fields in cluster " + cluster_name
-                ) from e
-    for error_cluster in clusters:
-        print(error_cluster, "is not present in cluster configuration file")
-    return cluster_list
+from optic.common.exceptions import OpticDataError
 
 
 def parse_bytes(bytes_string) -> int | float:
@@ -248,7 +199,7 @@ def get_index_info(index_list) -> list:
 def print_index_info(index_dicts) -> None:
     """
     Print Index Info
-    :param dict index_dicts: list of dictionaries of index information
+    :param list index_dicts: list of dictionaries of index information
     :return: None
     :rtype: None
     """

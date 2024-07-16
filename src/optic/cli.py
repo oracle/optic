@@ -1,15 +1,10 @@
 import click
 
-from optic.cluster.cluster_service import (
-    get_cluster_info,
-    get_cluster_list,
-    print_cluster_info,
-)
-from optic.common.config import Settings
+from optic.cluster.cluster_service import get_cluster_info, print_cluster_info
+from optic.common.config import ClusterConfig, Settings, yaml_load
 from optic.common.exceptions import OpticError
 from optic.index.index_service import (
     filter_and_sort_indices,
-    get_clusters_and_groups,
     get_index_info,
     print_index_info,
 )
@@ -39,14 +34,30 @@ def default_from_settings(setting_name):
 def cli(ctx, settings):
     ctx.ensure_object(dict)
     try:
-        settings = Settings(settings)
+        settings = Settings(yaml_load(settings))
         ctx.obj = settings.fields
     except OpticError as e:
         print(e)
         exit(1)
 
 
-@cli.command()
+@cli.group(help="cluster: Utilities relating to clusters")
+@click.pass_context
+def cluster(ctx):
+    pass
+
+
+@cluster.command()
+@click.option(
+    "-c",
+    "--clusters",
+    multiple=True,
+    default=(),
+    help="Specify cluster groups and/or specific clusters to query. "
+    "Default behavior queries all clusters present in config file. "
+    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
+    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+)
 @click.option(
     "-c",
     "--clusters",
@@ -71,18 +82,28 @@ def cli(ctx, settings):
     "(default is default_cluster_info_byte_type in settings yaml file)",
 )
 @click.pass_context
-def cluster_info(ctx, clusters, cluster_config, byte_type):
+def info(ctx, clusters, cluster_config, byte_type):
     """Prints status of all clusters in configuration file"""
     try:
-        cluster_list = get_cluster_list(clusters, cluster_config, byte_type)
-        cluster_info_dict = get_cluster_info(cluster_list)
+        desired_clusters = list(clusters)
+        desired_cluster_properties = {"byte_type": byte_type}
+        config_info = ClusterConfig(
+            yaml_load(cluster_config), desired_clusters, desired_cluster_properties
+        )
+        cluster_info_dict = get_cluster_info(config_info.desired_cluster_objects)
         print_cluster_info(cluster_info_dict)
     except OpticError as e:
         print(e)
         exit(1)
 
 
-@cli.command()
+@cli.group(help="index: Utilities relating to indices")
+@click.pass_context
+def index(ctx):
+    pass
+
+
+@index.command()
 @click.option(
     "-c",
     "--clusters",
@@ -166,7 +187,7 @@ def cluster_info(ctx, clusters, cluster_config, byte_type):
     "FIELD IN THE SETTINGS YAML FILE, NOT ON CL**",
 )
 @click.pass_context
-def index_info(
+def info(
     ctx,
     cluster_config,
     clusters,
@@ -196,10 +217,17 @@ def index_info(
             "max_doc_count": max_doc_count,
             "type_filter": type_filter,
         }
-        cluster_list = get_clusters_and_groups(
-            cluster_config, clusters, search_pattern, index_types
+        desired_clusters = list(clusters)
+        desired_cluster_properties = {
+            "index_search_pattern": search_pattern,
+            "index_types_dict": index_types,
+        }
+        config_info = ClusterConfig(
+            yaml_load(cluster_config), desired_clusters, desired_cluster_properties
         )
-        index_list = filter_and_sort_indices(cluster_list, filters, sort_by)
+        index_list = filter_and_sort_indices(
+            config_info.desired_cluster_objects, filters, sort_by
+        )
         index_info_dict = get_index_info(index_list)
         print_index_info(index_info_dict)
     except OpticError as e:
