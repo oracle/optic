@@ -1,4 +1,11 @@
+# ** OPTIC version 1.0.
+# **
+# ** Copyright (c) 2024 Oracle Corporation
+# ** Licensed under the Universal Permissive License v 1.0
+# ** as shown at https://oss.oracle.com/licenses/upl/
+
 import click
+from click import Option
 
 from optic.cluster.cluster_service import get_cluster_info, print_cluster_info
 from optic.common.config import ClusterConfig, Settings, yaml_load
@@ -11,7 +18,14 @@ from optic.index.index_service import (
 )
 
 
-def default_from_settings(setting_name):
+def default_from_settings(setting_name) -> type[Option] | None:
+    """
+    Constructs custom class to define some Click Option behaviors
+    :param string setting_name: name of the setting needed for Click option default
+    :return: class to override some Click Option behaviors
+    :rtype: type[Option] | None
+    """
+
     class OptionDefaultFromSettings(click.Option):
         def get_default(self, ctx, call=True):
             try:
@@ -58,8 +72,7 @@ def cli(ctx, settings):
 @click.option(
     "--shell-setup",
     prompt="Would you like to set up shell completion?  NOTE: This will involve  "
-    "creating a file in ~/.optic directory and appending a command to source it  "
-    "to your shell configuration file",
+    "appending a command to source it to your shell configuration file",
     type=click.Choice(["y", "N"], case_sensitive=False),
     help="Prompts user for permission to setup shell completion",
 )
@@ -75,7 +88,7 @@ def init(cluster_config_setup, settings_setup, shell_setup):
         exit(1)
 
 
-@cli.group(help="cluster: Utilities relating to clusters")
+@cli.group(help="cluster: Tool domain containing tools related to OpenSearch clusters")
 @click.pass_context
 def cluster(ctx):
     ctx.ensure_object(dict)
@@ -127,7 +140,7 @@ def info(ctx, clusters, cluster_config, byte_type):
         exit(1)
 
 
-@cli.group(help="index: Utilities relating to indices")
+@cli.group(help="index: Tool domain containing tools related to OpenSearch indices")
 @click.pass_context
 def index(ctx):
     ctx.ensure_object(dict)
