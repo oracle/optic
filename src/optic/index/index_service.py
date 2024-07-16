@@ -2,7 +2,7 @@ from terminaltables import AsciiTable
 
 from optic.cluster.cluster import Cluster
 from optic.common.config import ClusterConfig
-from optic.common.exceptions import OpticDataError
+from optic.common.exceptions import OpticConfigurationFileError, OpticDataError
 
 
 def get_clusters_and_groups(config_path, clusters, search_pattern, index_types) -> list:
@@ -16,26 +16,39 @@ def get_clusters_and_groups(config_path, clusters, search_pattern, index_types) 
     :rtype: list
     """
     config_info = ClusterConfig(config_path)
-    clusters_in_groups = []
+    clusters = list(clusters)
     for group, group_clusters in config_info.groups.items():
         if group in clusters:
-            clusters_in_groups.extend(group_clusters)
+            clusters.extend(group_clusters)
+            clusters.remove(group)
+    clusters = list(set(clusters))
     cluster_list = []
-    for env, cluster_data in config_info.clusters.items():
-        if (clusters == ()) or (env in clusters) or (env in clusters_in_groups):
-            cluster_list.append(
-                Cluster(
-                    base_url=cluster_data["url"],
-                    creds={
-                        "username": cluster_data["username"],
-                        "password": cluster_data["password"],
-                    },
-                    verify_ssl=cluster_data["verify_ssl"],
-                    custom_name=env,
-                    index_search_pattern=search_pattern,
-                    index_types_dict=index_types,
+    for cluster_name, cluster_data in config_info.clusters.items():
+        if (clusters == []) or (cluster_name in clusters):
+            try:
+                cluster_list.append(
+                    Cluster(
+                        base_url=cluster_data["url"],
+                        creds={
+                            "username": cluster_data["username"],
+                            "password": cluster_data["password"],
+                        },
+                        verify_ssl=cluster_data["verify_ssl"],
+                        custom_name=cluster_name,
+                        index_search_pattern=search_pattern,
+                        index_types_dict=index_types,
+                    )
                 )
-            )
+                if clusters:
+                    clusters.remove(cluster_name)
+                    if not clusters:
+                        break
+            except KeyError as e:
+                raise OpticConfigurationFileError(
+                    "Improperly formatted fields in cluster " + cluster_name
+                ) from e
+    for error_cluster in clusters:
+        print(error_cluster, "is not present in cluster configuration file")
     return cluster_list
 
 
@@ -48,38 +61,29 @@ def parse_bytes(bytes_string) -> int | float:
     """
     if type(bytes_string) is float:
         return bytes_string
-    if type(bytes_string) is int or bytes_string.isnumeric():
+    if type(bytes_string) is int or bytes_string.isdigit():
         return int(bytes_string)
-    test_bytes_string = bytes_string.replace(".", "", 1)
-    if test_bytes_string.isnumeric():
+    no_decimal_string = bytes_string.replace(".", "", 1)
+    if no_decimal_string.isdigit():
         return float(bytes_string)
     elif bytes_string[-1].lower() == "b":
         match bytes_string[-2].lower():
             case "k":
-                if bytes_string[:-2].replace(".", "", 1).isnumeric():
+                if no_decimal_string[:-2].isdigit():
                     return float(bytes_string[:-2]) * 2**10
-                else:
-                    raise OpticDataError("Unrecognized storage format: " + bytes_string)
             case "m":
-                if bytes_string[:-2].replace(".", "", 1).isnumeric():
+                if no_decimal_string[:-2].isdigit():
                     return float(bytes_string[:-2]) * 2**20
-                else:
-                    raise OpticDataError("Unrecognized storage format: " + bytes_string)
             case "g":
-                if bytes_string[:-2].replace(".", "", 1).isnumeric():
+                if no_decimal_string[:-2].isdigit():
                     return float(bytes_string[:-2]) * 2**30
-                else:
-                    raise OpticDataError("Unrecognized storage format: " + bytes_string)
             case "t":
-                if bytes_string[:-2].replace(".", "", 1).isnumeric():
+                if no_decimal_string[:-2].isdigit():
                     return float(bytes_string[:-2]) * 2**40
-                else:
-                    raise OpticDataError("Unrecognized storage format: " + bytes_string)
             case _:
-                if bytes_string[-2].isnumeric():
+                if no_decimal_string[-2].isdigit():
                     return float(bytes_string[:-1])
-                else:
-                    raise OpticDataError("Unrecognized storage format: " + bytes_string)
+        raise OpticDataError("Unrecognized storage format: " + bytes_string)
     else:
         raise OpticDataError("Unrecognized storage format: " + bytes_string)
 
@@ -147,7 +151,7 @@ def parse_sort_by(sort_by) -> list:
     sort_functions = []
     for sort_type in sort_by:
         if sort_type == "age":
-            sort_functions.append(lambda index: int(index.info.age))
+            sort_functions.append(lambda index: index.info.age)
         elif sort_type == "name":
             sort_functions.append(lambda index: index.info.index)
         elif sort_type == "index-size":
@@ -157,13 +161,13 @@ def parse_sort_by(sort_by) -> list:
         elif sort_type == "shard-size":
             sort_functions.append(lambda index: parse_bytes(index.info.shard_size))
         elif sort_type == "doc-count":
-            sort_functions.append(lambda index: int(getattr(index.info, "docs.count")))
+            sort_functions.append(lambda index: getattr(index.info, "docs.count"))
         elif sort_type == "type":
             sort_functions.append(lambda index: index.info.index_type)
         elif sort_type == "primary-shards":
-            sort_functions.append(lambda index: int(index.info.pri))
+            sort_functions.append(lambda index: index.info.pri)
         elif sort_type == "replica-shards":
-            sort_functions.append(lambda index: int(index.info.rep))
+            sort_functions.append(lambda index: index.info.rep)
 
     return sort_functions
 
@@ -230,11 +234,11 @@ def get_index_info(index_list) -> list:
                 "name": index.info.index,
                 "age": index.info.age,
                 "type": index.info.index_type,
-                "count": int(getattr(index.info, "docs.count")),
+                "count": getattr(index.info, "docs.count"),
                 "index_size": getattr(index.info, "pri.store.size"),
                 "shard_size": index.info.shard_size,
-                "pri": int(index.info.pri),
-                "rep": int(index.info.rep),
+                "pri": index.info.pri,
+                "rep": index.info.rep,
                 "cluster": index.cluster_name,
             }
         )

@@ -20,25 +20,18 @@ class OpenSearchAction:
     @property
     def response(self) -> dict:
         if not self._response:
-            basic = HTTPBasicAuth(self.usr, self.pwd)
-            self._response = requests.get(
-                self.base_url + self.query,
-                verify=self.verify_ssl,
-                auth=basic,
-                timeout=3,
-            )
             try:
-                self._response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                raise OpticAPIError(str(err)) from err
-            if (
-                self._response.headers["Content-Type"]
-                == "application/json; charset=UTF-8"
-            ):
-                return self._response.json()
-            else:
-                raise OpticAPIError(
-                    "Unrecognized content type from call to " + self.query
+                basic = HTTPBasicAuth(self.usr, self.pwd)
+                self._response = requests.get(
+                    self.base_url + self.query,
+                    verify=self.verify_ssl,
+                    auth=basic,
+                    timeout=3,
                 )
+                self._response.raise_for_status()
+            except requests.exceptions.RequestException as err:
+                raise OpticAPIError(str(err)) from err
+
+            self._response = self._response.json()
 
         return self._response

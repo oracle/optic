@@ -3,16 +3,24 @@ from datetime import datetime, timezone
 
 import dateutil.parser
 
-from optic.common.exceptions import OpticAPIError, OpticDataError
+from optic.common.exceptions import OpticDataError
 
 
 class IndexInfo:
-    def __init__(self, _index_types_dict=None, **kwargs):
+    def __init__(self, index_types_dict=None, **kwargs):
+        self.index = None
+        self.pri = None
         self._age = None
         self._shard_size = None
         self._index_type = None
-        self._index_types_dict = _index_types_dict
-        self.__dict__.update(kwargs)
+        self.index_types_dict = index_types_dict
+        self._set_properties_from_response(**kwargs)
+
+    def _set_properties_from_response(self, **kwargs):
+        for key, value in kwargs.items():
+            if isinstance(value, str) and value.isdigit():
+                value = int(value)
+            setattr(self, key, value)
 
     def _calculate_age(self) -> int:
         """
@@ -31,10 +39,10 @@ class IndexInfo:
         :return: index type string
         :rtype: str
         """
-        for type_name, reg_ex in self._index_types_dict.items():
+        for type_name, reg_ex in self.index_types_dict.items():
             if re.match(reg_ex, self.index):
                 return type_name
-        return "UNTYPED"
+        return "UNDEFINED"
 
     @property
     def age(self):
@@ -79,25 +87,32 @@ class IndexInfo:
                             )
                         else:
                             raise OpticDataError(
-                                "Unrecognized index size storage format: ", store_size
+                                "Unrecognized index size storage format: "
+                                + store_size
+                                + " for index "
+                                + self.index
                             )
             else:
                 raise OpticDataError(
-                    "Unrecognized index size storage format: ", store_size
+                    "Unrecognized index size storage format: "
+                    + store_size
+                    + " for index "
+                    + self.index
                 )
         return self._shard_size
 
 
 class Index:
-    def __init__(self, cluster_name=None, index_types=None, _info=None):
+    def __init__(self, cluster_name=None, index_types_dict=None, info_response=None):
         self.cluster_name = cluster_name
-        self.index_type = index_types
-        self._info = _info
+        self.index_types_dict = index_types_dict
+        self.info_response = info_response
+        self._info = None
 
     @property
     def info(self) -> IndexInfo:
         if not self._info:
-            raise OpticAPIError(
-                "Failed to construct index information from API response"
+            self._info = IndexInfo(
+                index_types_dict=self.index_types_dict, **self.info_response
             )
         return self._info

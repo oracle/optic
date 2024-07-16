@@ -4,7 +4,7 @@ import dateutil.parser
 
 from optic.cluster.cluster import Cluster
 from optic.common.exceptions import OpticDataError
-from optic.index.index import Index, IndexInfo
+from optic.index.index import Index
 from optic.index.index_service import (
     get_index_info,
     parse_bytes,
@@ -29,6 +29,7 @@ class TestIndexService:
         assert parse_bytes("320gb") == 320 * 2**30
         assert parse_bytes("320tb") == 320 * 2**40
         assert parse_bytes("320.75gb") == 320.75 * 2**30
+        assert parse_bytes("320.754b") == 320.754
         # TODO: Import pytest for exception asserts
         try:
             parse_bytes("320.75yb")
@@ -72,11 +73,10 @@ class TestIndexService:
             "creation.date.string": "2024-06-04T15:17:41.806Z",
         }
         test_index_types = {"STOCK": "(.*)ocki(.*)$"}
-        test_index_info = IndexInfo(_index_types_dict=test_index_types, **sim_response)
         test_index = Index(
             cluster_name="test_cluster",
-            index_types=test_index_types,
-            _info=test_index_info,
+            index_types_dict=test_index_types,
+            info_response=sim_response,
         )
         test_cluster._index_list.append(test_index)
 
@@ -120,11 +120,10 @@ class TestIndexService:
             "pri.store.size": "300kb",
             "docs.count": "600",
         }
-        test_index_info = IndexInfo(**index_info_dict)
-        test_index_info._age = 10
-        test_index_info._index_type = "type_1"
-        test_index_info._shard_size = "150b"
-        test_index = Index(_info=test_index_info)
+        test_index = Index(info_response=index_info_dict)
+        test_index.info._age = 10
+        test_index.info._index_type = "type_1"
+        test_index.info._shard_size = "150b"
         assert filter_function_list[0](test_index) is True
         assert filter_function_list[1](test_index) is False
         assert filter_function_list[2](test_index) is True
@@ -156,11 +155,10 @@ class TestIndexService:
             "pri": "1",
             "rep": "0",
         }
-        test_index_info = IndexInfo(**index_info_dict)
-        test_index_info._age = 10
-        test_index_info._index_type = "type_1"
-        test_index_info._shard_size = "150b"
-        test_index = Index(_info=test_index_info)
+        test_index = Index(info_response=index_info_dict)
+        test_index.info._age = 10
+        test_index.info._index_type = "type_1"
+        test_index.info._shard_size = "150b"
         assert sort_function_list[0](test_index) == 10
         assert sort_function_list[1](test_index) == "test_name"
         assert sort_function_list[2](test_index) == 300 * 2**10

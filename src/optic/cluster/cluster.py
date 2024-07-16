@@ -1,11 +1,17 @@
 from optic.common.api import OpenSearchAction
 from optic.common.exceptions import OpticDataError
-from optic.index.index import Index, IndexInfo
+from optic.index.index import Index
 
 
 class ClusterHealth:
     def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
+        self._set_properties_from_response(**kwargs)
+
+    def _set_properties_from_response(self, **kwargs):
+        for key, value in kwargs.items():
+            if isinstance(value, str) and value.isdigit():
+                value = int(value)
+            setattr(self, key, value)
 
 
 class Cluster:
@@ -56,7 +62,7 @@ class Cluster:
     @property
     def health(self) -> dict:
         if not self._health:
-            print("Getting cluster health")
+            print("Getting cluster health for", self.custom_name)
             api = OpenSearchAction(
                 base_url=self.base_url,
                 usr=self.creds["username"],
@@ -71,7 +77,7 @@ class Cluster:
     @property
     def storage_percent(self) -> int:
         if not self._storage_percent:
-            print("Getting storage percent")
+            print("Getting storage percent for", self.custom_name)
             api = OpenSearchAction(
                 base_url=self.base_url,
                 usr=self.creds["username"],
@@ -87,7 +93,7 @@ class Cluster:
     @property
     def index_list(self) -> list:
         if not self._index_list:
-            print("Getting cluster index list")
+            print("Getting cluster index list for", self.custom_name)
             index_list = []
             api = OpenSearchAction(
                 base_url=self.base_url,
@@ -99,13 +105,12 @@ class Cluster:
                 + "?format=json&h=health,status,index,uuid,pri,rep,docs.count,"
                 "docs.deleted,store.size,pri.store.size,creation.date.string",
             )
-            for index in api.response:
+            for index_info in api.response:
                 index_list.append(
                     Index(
                         cluster_name=self.custom_name,
-                        _info=IndexInfo(
-                            _index_types_dict=self.index_types_dict, **index
-                        ),
+                        index_types_dict=self.index_types_dict,
+                        info_response=index_info,
                     )
                 )
             self._index_list = index_list
