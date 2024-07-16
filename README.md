@@ -71,7 +71,7 @@ clusters:
     url: 'https://myurl.com:9200'
     username: 'my_username2'
     password: '****'
-    verify_ssl: false
+    verify_ssl: true
   'my_cluster':
     url: 'https://onlineopensearchcluster.com:634'
     username: 'my_username3'
