@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.
+# ** OPTIC version 1.0.0
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -118,8 +118,17 @@ class IndexInfo:
 
 
 class Index:
-    def __init__(self, cluster_name=None, index_types_dict=None, info_response=None):
+    def __init__(
+        self,
+        cluster_name=None,
+        index_name=None,
+        write_alias=None,
+        index_types_dict=None,
+        info_response=None,
+    ):
         self.cluster_name = cluster_name
+        self.name = index_name
+        self.write_alias = write_alias
         self.index_types_dict = index_types_dict
         self.info_response = info_response
         self._info = None

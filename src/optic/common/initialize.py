@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.
+# ** OPTIC version 1.0.0
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -44,9 +44,11 @@ groups:
 SAMPLE_SETTINGS = """settings_file_path: '~/.optic/optic-settings.yaml'
 default_cluster_config_file_path: '~/.optic/cluster-config.yaml'
 
+disable_terminal_color: False
+
 default_cluster_info_byte_type: 'gb'
 
-default_index_search_pattern: '*'
+default_search_pattern: '*'
 default_index_type_patterns:
   ISM: '(.*)-ism-(\\d{6})$'
   ISM_MALFORMED: '(.*)-ism$'

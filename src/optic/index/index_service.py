@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.
+# ** OPTIC version 1.0.0
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -7,6 +7,7 @@
 from terminaltables import AsciiTable
 
 from optic.common.exceptions import OpticDataError
+from optic.common.opticolor import Opticolor
 
 
 def parse_bytes(bytes_string) -> int | float:
@@ -69,11 +70,17 @@ def parse_filters(filters) -> list:
             )
         elif filter_type == "equality":
             return lambda index: (getattr(index.info, attribute) != captured_value)
+        elif filter_type == "top_level":
+            return lambda index: (getattr(index, attribute) == captured_value)
 
     filter_functions = []
     for key, value in filters.items():
         if value is not None:
-            if key == "min_age":
+            if key == "write_alias_only":
+                filter_functions.append(
+                    filter_generator("write_alias", value, "top_level")
+                )
+            elif key == "min_age":
                 filter_functions.append(filter_generator("age", value, "min"))
             elif key == "max_age":
                 filter_functions.append(filter_generator("age", value, "max"))
@@ -115,6 +122,8 @@ def parse_sort_by(sort_by) -> list:
             sort_functions.append(lambda index: index.info.age)
         elif sort_type == "name":
             sort_functions.append(lambda index: index.info.index)
+        elif sort_type == "write-alias":
+            sort_functions.append(lambda index: index.write_alias)
         elif sort_type == "index-size":
             sort_functions.append(
                 lambda index: parse_bytes(getattr(index.info, "pri.store.size"))
@@ -196,6 +205,7 @@ def get_index_info(index_list) -> list:
         index_dicts.append(
             {
                 "name": index.info.index,
+                "write_alias": index.write_alias,
                 "age": index.info.age,
                 "type": index.info.index_type,
                 "count": getattr(index.info, "docs.count"),
@@ -209,14 +219,16 @@ def get_index_info(index_list) -> list:
     return index_dicts
 
 
-def print_index_info(index_dicts) -> None:
+def print_index_info(index_dicts, no_color) -> None:
     """
     Prints Index Information
 
     :param list index_dicts: list of dictionaries of index information
+    :param bool no_color: whether colored output or not
     :return: None
     :rtype: None
     """
+    opticolor = Opticolor()
     print_data = [
         [
             "Index",
@@ -227,6 +239,7 @@ def print_index_info(index_dicts) -> None:
             "Shard Size",
             "Pri",
             "Rep",
+            "Write Alias",
             "Cluster",
         ]
     ]
@@ -241,6 +254,9 @@ def print_index_info(index_dicts) -> None:
                 stats["shard_size"],
                 stats["pri"],
                 stats["rep"],
+                (opticolor.GREEN if stats["write_alias"] else opticolor.RED)
+                + str(stats["write_alias"])
+                + opticolor.STOP,
                 stats["cluster"],
             ]
         )

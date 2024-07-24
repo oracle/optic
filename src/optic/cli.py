@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.
+# ** OPTIC version 1.0.0
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -7,6 +7,7 @@
 import click
 from click import Option
 
+from optic.alias.alias_service import get_alias_info, print_alias_info
 from optic.cluster.cluster_service import get_cluster_info, print_cluster_info
 from optic.common.config import ClusterConfig, Settings, yaml_load
 from optic.common.exceptions import OpticError
@@ -124,8 +125,15 @@ def cluster(ctx):
     help="specify the mb or gb type for storage calculation "
     "(default is default_cluster_info_byte_type in settings yaml file)",
 )
+@click.option(
+    "--no-color",
+    is_flag=True,
+    cls=default_from_settings("disable_terminal_color"),
+    help="disable terminal color output (default is disable_terminal_color"
+    " in settings yaml file)",
+)
 @click.pass_context
-def info(ctx, clusters, cluster_config, byte_type):
+def info(ctx, clusters, cluster_config, byte_type, no_color):
     """Prints status of all clusters in configuration file"""
     try:
         desired_clusters = list(clusters)
@@ -133,8 +141,8 @@ def info(ctx, clusters, cluster_config, byte_type):
         config_info = ClusterConfig(
             yaml_load(cluster_config), desired_clusters, desired_cluster_properties
         )
-        cluster_info_dict = get_cluster_info(config_info.desired_cluster_objects)
-        print_cluster_info(cluster_info_dict)
+        cluster_info_list = get_cluster_info(config_info.desired_cluster_objects)
+        print_cluster_info(cluster_info_list, no_color)
     except OpticError as e:
         print(e)
         exit(1)
@@ -166,9 +174,16 @@ def index(ctx):
 @click.option(
     "-p",
     "--search-pattern",
-    cls=default_from_settings("default_index_search_pattern"),
-    help="specify a search pattern for indices (default is"
-    " default_index_search_pattern field in settings yaml file)",
+    cls=default_from_settings("default_search_pattern"),
+    help="specify a glob search pattern for indices (default is"
+    " default_search_pattern field in settings yaml file)",
+)
+@click.option(
+    "-w",
+    "--write-alias-only",
+    is_flag=True,
+    default=None,
+    help="filter to only display indices that are targets of write aliases",
 )
 @click.option(
     "--cluster-config",
@@ -216,6 +231,7 @@ def index(ctx):
         [
             "age",
             "name",
+            "write-alias",
             "index-size",
             "shard-size",
             "doc-count",
@@ -235,12 +251,20 @@ def index(ctx):
     "**THIS SHOULD BE DONE UNDER THE default_index_type_patterns "
     "FIELD IN THE SETTINGS YAML FILE, NOT ON CL**",
 )
+@click.option(
+    "--no-color",
+    is_flag=True,
+    cls=default_from_settings("disable_terminal_color"),
+    help="disable terminal color output (default is disable_terminal_color"
+    " in settings yaml file)",
+)
 @click.pass_context
 def info(
     ctx,
     cluster_config,
     clusters,
     search_pattern,
+    write_alias_only,
     min_age,
     max_age,
     min_index_size,
@@ -252,10 +276,12 @@ def info(
     type_filter,
     sort_by,
     index_types,
+    no_color,
 ):
     """Get Index information"""
     try:
         filters = {
+            "write_alias_only": write_alias_only,
             "min_age": min_age,
             "max_age": max_age,
             "min_index_size": min_index_size,
@@ -278,7 +304,72 @@ def info(
             config_info.desired_cluster_objects, filters, sort_by
         )
         index_info_dict = get_index_info(index_list)
-        print_index_info(index_info_dict)
+        print_index_info(index_info_dict, no_color)
+    except OpticError as e:
+        print(e)
+        exit(1)
+
+
+@cli.group(help="alias: Tool domain containing tools related to OpenSearch aliases")
+@click.pass_context
+def alias(ctx):
+    ctx.ensure_object(dict)
+    try:
+        settings = Settings(yaml_load(ctx.obj["settings_file_path"]))
+        ctx.obj = settings.fields
+    except OpticError as e:
+        print(e)
+        exit(1)
+
+
+@alias.command()
+@click.option(
+    "-c",
+    "--clusters",
+    multiple=True,
+    default=(),
+    help="Specify cluster groups and/or specific clusters to query. "
+    "Default behavior queries all clusters present in config file. "
+    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
+    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+)
+@click.option(
+    "--cluster-config",
+    cls=default_from_settings("default_cluster_config_file_path"),
+    help="specify a non-default configuration file path "
+    "(default is default_cluster_config_file_path field in settings yaml file",
+)
+@click.option(
+    "-p",
+    "--search-pattern",
+    cls=default_from_settings("default_search_pattern"),
+    help="specify a glob search pattern for aliases (default is"
+    " default_search_pattern field in settings yaml file)",
+)
+@click.option(
+    "--no-color",
+    is_flag=True,
+    cls=default_from_settings("disable_terminal_color"),
+    help="disable terminal color output (default is disable_terminal_color"
+    " in settings yaml file)",
+)
+@click.pass_context
+def info(ctx, clusters, cluster_config, search_pattern, no_color):
+    """Prints information about aliases in use"""
+    try:
+        desired_clusters = list(clusters)
+        desired_cluster_properties = {
+            "index_search_pattern": search_pattern,
+        }
+        config_info = ClusterConfig(
+            yaml_load(cluster_config), desired_clusters, desired_cluster_properties
+        )
+        alias_list = []
+        for cluster in config_info.desired_cluster_objects:
+            alias_list.extend(cluster.alias_list)
+
+        alias_info_list = get_alias_info(alias_list)
+        print_alias_info(alias_info_list, no_color)
     except OpticError as e:
         print(e)
         exit(1)

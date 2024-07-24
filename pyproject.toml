@@ -9,7 +9,7 @@ description = "Opensearch Tools for Indices and Clusters"
 readme = "README.md"
 authors = [
     {name = "Seth Lippman", email = "seth.lippman@oracle.com"},
-    {name = "Franklin Freita", email = "franklin.freitas.de.sousa@oracle.com"},
+    {name = "Franklin Freitas", email = "franklin.freitas.de.sousa@oracle.com"},
     {name = "Brandon Cisneros", email = "brandon.cisneros@oracle.com"}
 ]
 requires-python = ">=3.12"
