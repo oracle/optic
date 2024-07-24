@@ -1,9 +1,10 @@
-# ** OPTIC version 1.0.
+# ** OPTIC version 1.0.0
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
 # ** as shown at https://oss.oracle.com/licenses/upl/
 
+from optic.alias.alias import Alias
 from optic.common.api import OpenSearchAction
 from optic.common.exceptions import OpticDataError
 from optic.index.index import Index
@@ -49,6 +50,7 @@ class Cluster:
         self.index_search_pattern = index_search_pattern
         self._index_list = None
         self.index_types_dict = index_types_dict
+        self._alias_list = None
 
     def _calculate_storage_percent(self, disk_list) -> int:
         """
@@ -120,10 +122,22 @@ class Cluster:
                 + "?format=json&h=health,status,index,uuid,pri,rep,docs.count,"
                 "docs.deleted,store.size,pri.store.size,creation.date.string",
             )
+
+            # Create map for index -> write_target_alias?
+            index_to_write_target = {}
+            aliases = self.alias_list
+            for alias in aliases:
+                for write_target in alias.write_targets:
+                    index_to_write_target[write_target.index] = True
+
             for index_info in api.response:
                 index_list.append(
                     Index(
                         cluster_name=self.custom_name,
+                        index_name=index_info["index"],
+                        write_alias=index_to_write_target.get(
+                            index_info["index"], False
+                        ),
                         index_types_dict=self.index_types_dict,
                         info_response=index_info,
                     )
@@ -131,3 +145,37 @@ class Cluster:
             self._index_list = index_list
 
         return self._index_list
+
+    @property
+    def alias_list(self) -> list:
+        if not self._alias_list:
+            print("Getting cluster alias list for", self.custom_name)
+            alias_list = []
+            api = OpenSearchAction(
+                base_url=self.base_url,
+                usr=self.creds["username"],
+                pwd=self.creds["password"],
+                verify_ssl=self.verify_ssl,
+                query="/_cat/aliases/" + self.index_search_pattern + "?format=json",
+            )
+
+            # Parse multiple responses that correspond to one alias
+            alias_to_indices = {}
+            for alias_info in api.response:
+                if alias_info["alias"] not in alias_to_indices.keys():
+                    alias_to_indices[alias_info["alias"]] = []
+                alias_to_indices[alias_info["alias"]].append(
+                    {key: val for key, val in alias_info.items() if key != "alias"}
+                )
+
+            for alias_name, alias_info in alias_to_indices.items():
+                alias_list.append(
+                    Alias(
+                        alias_name=alias_name,
+                        cluster_name=self.custom_name,
+                        info_response=alias_info,
+                    )
+                )
+            self._alias_list = alias_list
+
+        return self._alias_list

@@ -25,6 +25,8 @@ modular, reuse information, and be intuitively called from the command line (des
   - info: Tool displaying key information (Health Status, Storage Percentage) about clusters
 - index:  Tool domain containing tools related to OpenSearch indices
   - info: Tool displaying key information (Name, Age, Document Count, Index Size, etc.) about indices
+- alias:  Tool domain containing tools related to OpenSearch aliases
+  - info: Tool displaying key information (Index Targets, Write Target?, Filtered Alias?, etc.) about aliases
 
 ## Requirements
 * Python **>3.12** is <mark>required</mark> to run the OPTIC toolset.
@@ -125,9 +127,11 @@ groups:
 settings_file_path: '~/.optic/optic-settings.yaml'
 default_cluster_config_file_path: '~/.optic/cluster-config.yaml'
 
+disable_terminal_color: False
+
 default_cluster_info_byte_type: 'gb'
 
-default_index_search_pattern: '*'
+default_search_pattern: '*'
 default_index_type_patterns:
   ISM: '(.*)-ism-(\d{6})$'
   ISM_MALFORMED: '(.*)-ism$'
