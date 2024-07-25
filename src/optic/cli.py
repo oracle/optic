@@ -43,6 +43,7 @@ def default_from_settings(setting_name) -> type[Option] | None:
     return OptionDefaultFromSettings
 
 
+# BEGIN: OPTIC Entry Point
 @click.group(help="optic: Opensearch Tools for Indices and Cluster")
 @click.option(
     "--settings",
@@ -56,6 +57,10 @@ def cli(ctx, settings):
     ctx.obj["settings_file_path"] = settings
 
 
+# END: OPTIC Entry Point
+
+
+# BEGIN: Special init command (No tool domain)
 @cli.command()
 @click.option(
     "--cluster-config-setup",
@@ -89,6 +94,10 @@ def init(cluster_config_setup, settings_setup, shell_setup):
         exit(1)
 
 
+# END: Special init command (No tool domain)
+
+
+# BEGIN: Cluster Tool Domain
 @cli.group(help="cluster: Tool domain containing tools related to OpenSearch clusters")
 @click.pass_context
 def cluster(ctx):
@@ -101,6 +110,7 @@ def cluster(ctx):
         exit(1)
 
 
+# BEGIN: Info Tool
 @cluster.command()
 @click.option(
     "-c",
@@ -132,8 +142,18 @@ def cluster(ctx):
     help="disable terminal color output (default is disable_terminal_color"
     " in settings yaml file)",
 )
+@click.option(
+    "--storage-percent-thresholds",
+    type=dict,
+    cls=default_from_settings("storage_percent_thresholds"),
+    help="specify thresholds for storage % coloring.  "
+    "**THIS SHOULD BE DONE UNDER THE storage_percent_thresholds "
+    "FIELD IN THE SETTINGS YAML FILE, NOT ON CL**",
+)
 @click.pass_context
-def info(ctx, clusters, cluster_config, byte_type, no_color):
+def info(
+    ctx, clusters, cluster_config, byte_type, no_color, storage_percent_thresholds
+):
     """Prints status of all clusters in configuration file"""
     try:
         desired_clusters = list(clusters)
@@ -142,12 +162,17 @@ def info(ctx, clusters, cluster_config, byte_type, no_color):
             yaml_load(cluster_config), desired_clusters, desired_cluster_properties
         )
         cluster_info_list = get_cluster_info(config_info.desired_cluster_objects)
-        print_cluster_info(cluster_info_list, no_color)
+        print_cluster_info(cluster_info_list, no_color, storage_percent_thresholds)
     except OpticError as e:
         print(e)
         exit(1)
 
 
+# END: Info Tool
+# END: Cluster Tool Domain
+
+
+# BEGIN: Index Tool Domain
 @cli.group(help="index: Tool domain containing tools related to OpenSearch indices")
 @click.pass_context
 def index(ctx):
@@ -160,6 +185,7 @@ def index(ctx):
         exit(1)
 
 
+# BEGIN: Info Tool
 @index.command()
 @click.option(
     "-c",
@@ -310,6 +336,11 @@ def info(
         exit(1)
 
 
+# END: Info Tool
+# END: Index Tool Domain
+
+
+# BEGIN: Alias Tool Domain
 @cli.group(help="alias: Tool domain containing tools related to OpenSearch aliases")
 @click.pass_context
 def alias(ctx):
@@ -322,6 +353,7 @@ def alias(ctx):
         exit(1)
 
 
+# BEGIN: Info Tool
 @alias.command()
 @click.option(
     "-c",
@@ -373,3 +405,7 @@ def info(ctx, clusters, cluster_config, search_pattern, no_color):
     except OpticError as e:
         print(e)
         exit(1)
+
+
+# END: Info Tool
+# END: Alias Tool Domain

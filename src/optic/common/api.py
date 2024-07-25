@@ -24,7 +24,13 @@ class OpenSearchAction:
         self._response = None
 
     @property
-    def response(self) -> dict:
+    def response(self) -> list | dict:
+        """
+        Returns JSON-like object with response data
+
+        :return: JSON-like object with response data
+        :rtype: list | dict
+        """
         if not self._response:
             try:
                 basic = HTTPBasicAuth(self.usr, self.pwd)

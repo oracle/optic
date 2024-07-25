@@ -27,12 +27,13 @@ def get_cluster_info(cluster_list) -> list:
     return clusters_dicts
 
 
-def print_cluster_info(cluster_dicts, no_color) -> None:
+def print_cluster_info(cluster_dicts, no_color, storage_percent_thresholds) -> None:
     """
     Prints Cluster Information
 
     :param list cluster_dicts: list of dictionaries of cluster information
     :param bool no_color: whether colored output or not
+    :param dict storage_percent_thresholds: dict of storage percent thresholds
     :return: None
     :rtype: None
     """
@@ -40,7 +41,7 @@ def print_cluster_info(cluster_dicts, no_color) -> None:
     if no_color:
         opticolor.disable_colors()
 
-    print_data = [["ENV", "STATUS", "STORAGE USE (%)"]]
+    print_data = [["Cluster", "Status", "Storage Use (%)"]]
     for stats in cluster_dicts:
         status = stats["status"]
         match status:
@@ -51,7 +52,15 @@ def print_cluster_info(cluster_dicts, no_color) -> None:
             case "green":
                 status = opticolor.GREEN + status + opticolor.STOP
 
-        print_data.append([stats["name"], status, stats["usage"]])
+        usage = stats["usage"]
+        if usage < storage_percent_thresholds["GREEN"]:
+            usage = opticolor.GREEN + str(usage) + opticolor.STOP
+        elif usage < storage_percent_thresholds["YELLOW"]:
+            usage = opticolor.YELLOW + str(usage) + opticolor.STOP
+        elif usage <= storage_percent_thresholds["RED"]:
+            usage = opticolor.RED + str(usage) + opticolor.STOP
+
+        print_data.append([stats["name"], status, usage])
 
     table = AsciiTable(print_data)
     table.title = "Cluster Info"

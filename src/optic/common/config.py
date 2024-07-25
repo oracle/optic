@@ -43,18 +43,25 @@ class ClusterConfig:
         self._desired_cluster_objects = None
 
     @property
-    def groups(self):
+    def groups(self) -> dict:
+        """
+        Gets cluster group information from data
+
+        :return: Dictionary of cluster group information
+        :rtype: dict
+        """
         if self._groups is None:
-            try:
-                self._groups = self._data["groups"]
-            except KeyError as err:
-                raise OpticConfigurationFileError(
-                    "Missing groups key in configuration information"
-                ) from err
+            self._groups = self._data.get("groups", None)
         return self._groups
 
     @property
-    def clusters(self):
+    def clusters(self) -> dict:
+        """
+        Gets cluster information from data
+
+        :return: Dictionary of cluster information
+        :rtype: dict
+        """
         if self._clusters is None:
             try:
                 self._clusters = self._data["clusters"]
@@ -65,18 +72,26 @@ class ClusterConfig:
         return self._clusters
 
     @property
-    def desired_cluster_objects(self):
+    def desired_cluster_objects(self) -> list[Cluster]:
+        """
+        Makes list of cluster objects from depending on desired
+
+        :return: List of cluster objects
+        :rtype: list[Cluster]
+        """
         if self._desired_cluster_objects is None:
             self._desired_cluster_objects = []
 
             # Replaces cluster group names with associated clusters
-            for group_name, group_clusters in self.groups.items():
-                if group_name in self._desired_clusters:
-                    self._desired_clusters.extend(group_clusters)
-                    self._desired_clusters.remove(group_name)
+            if self.groups:
+                for group_name, group_clusters in self.groups.items():
+                    if group_name in self._desired_clusters:
+                        self._desired_clusters.extend(group_clusters)
+                        self._desired_clusters.remove(group_name)
+            # Delete repeats
             self._desired_clusters = list(set(self._desired_clusters))
 
-            # If no clusters specified, do all clusters TODO: DECIDE DEFAULT BEHAVIOR
+            # If no clusters specified, do all clusters
             default_behavior = len(self._desired_clusters) == 0
 
             # If a cluster is in desired cluster list, makes object out of it

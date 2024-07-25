@@ -56,7 +56,7 @@ class Cluster:
         """
         Calculate the storage percentage of cluster in use
 
-        :param dict disk_list: dictionary of cluster disk information
+        :param list disk_list: list of dictionaries of cluster disk information
         :return: storage percentage (0-100)
         :rtype: int
         :raises OpticDataError: if storage total is 0 or null
@@ -77,7 +77,13 @@ class Cluster:
         return int(round(100 * (float(used) / float(total))))
 
     @property
-    def health(self) -> dict:
+    def health(self) -> ClusterHealth:
+        """
+        Constructs and returns Cluster Health object from API call
+
+        :return: Cluster Health object
+        :rtype: ClusterHealth
+        """
         if not self._health:
             print("Getting cluster health for", self.custom_name)
             api = OpenSearchAction(
@@ -93,6 +99,12 @@ class Cluster:
 
     @property
     def storage_percent(self) -> int:
+        """
+        Returns the storage percentage of cluster in use from API call
+
+        :return: storage percentage (0%-100%)
+        :rtype: int
+        """
         if not self._storage_percent:
             print("Getting storage percent for", self.custom_name)
             api = OpenSearchAction(
@@ -109,6 +121,12 @@ class Cluster:
 
     @property
     def index_list(self) -> list:
+        """
+        Returns list of Index objects associated with cluster
+
+        :return: list of Index objects
+        :rtype: list
+        """
         if not self._index_list:
             print("Getting cluster index list for", self.custom_name)
             index_list = []
@@ -148,6 +166,12 @@ class Cluster:
 
     @property
     def alias_list(self) -> list:
+        """
+        Returns list of Alias objects associated with cluster
+
+        :return: list of Alias objects
+        :rtype: list
+        """
         if not self._alias_list:
             print("Getting cluster alias list for", self.custom_name)
             alias_list = []
@@ -159,7 +183,50 @@ class Cluster:
                 query="/_cat/aliases/" + self.index_search_pattern + "?format=json",
             )
 
-            # Parse multiple responses that correspond to one alias
+            """
+            Parse multiple responses that correspond to one alias
+
+            Response:
+            [  {
+                "alias": "alias1",
+                "index": "stockindex",
+                "filter": "-",
+                "routing.index": "-",
+                "routing.search": "-",
+                "is_write_index": "-"
+              },
+              {
+                "alias": "alias1",
+                "index": "students",
+                "filter": "*",
+                "routing.index": "1",
+                "routing.search": "1",
+                "is_write_index": "true"
+              }
+            ]
+
+            ---------------BECOMES------------------
+
+            alias_to_indices:
+            {
+              "alias1" : [
+                  {
+                      "index": "stockindex",
+                      "filter": "-",
+                      "routing.index": "-",
+                      "routing.search": "-",
+                      "is_write_index": "-"
+                  },
+                  {
+                      "index": "students",
+                      "filter": "*",
+                      "routing.index": "1",
+                      "routing.search": "1",
+                      "is_write_index": "true"
+                  }
+              ]
+            }
+            """
             alias_to_indices = {}
             for alias_info in api.response:
                 if alias_info["alias"] not in alias_to_indices.keys():

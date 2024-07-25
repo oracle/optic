@@ -41,18 +41,27 @@ groups:
     - 'my_cluster'
 """
 
-SAMPLE_SETTINGS = """settings_file_path: '~/.optic/optic-settings.yaml'
+SAMPLE_SETTINGS = """# File Paths
+settings_file_path: '~/.optic/optic-settings.yaml'
 default_cluster_config_file_path: '~/.optic/cluster-config.yaml'
 
+# Terminal Customization
 disable_terminal_color: False
 
+# Cluster Info Settings
 default_cluster_info_byte_type: 'gb'
+storage_percent_thresholds:
+  GREEN: 80
+  YELLOW: 85
+  RED: 100
 
+# Index/Alias Info Settings
 default_search_pattern: '*'
 default_index_type_patterns:
   ISM: '(.*)-ism-(\\d{6})$'
   ISM_MALFORMED: '(.*)-ism$'
   SYSTEM: '(^\\..*)$'
+  DATED: '(.*)-(\\d{4})\\.(\\d{2})\\.(\\d{2})$'
 """
 
 

@@ -38,6 +38,12 @@ class Alias:
 
     @property
     def targets(self) -> list[AliasTarget]:
+        """
+        Provides list of AliasTarget objects associated with an alias
+
+        :return: list of AliasTarget
+        :rtype: list[AliasTarget]
+        """
         if not self._targets:
             self._targets = [
                 AliasTarget(**index_details) for index_details in self.info_response
@@ -46,6 +52,12 @@ class Alias:
 
     @property
     def write_targets(self) -> list[AliasTarget]:
+        """
+        Provides list of AliasTarget objects that are write targets
+
+        :return: list of AliasTarget
+        :rtype: list[AliasTarget]
+        """
         if not self._write_targets:
             self._write_targets = [
                 target for target in self.targets if target.is_write_index
