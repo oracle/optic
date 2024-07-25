@@ -229,6 +229,9 @@ def print_index_info(index_dicts, no_color) -> None:
     :rtype: None
     """
     opticolor = Opticolor()
+    if no_color:
+        opticolor.disable_colors()
+
     print_data = [
         [
             "Index",

@@ -60,10 +60,6 @@ class TestClusterClass:
 
 
 class TestClusterService:
-    def test_get_cluster_list(self):
-        # TODO
-        assert 1 == 1
-
     def test_get_cluster_info(self):
         test_cluster_1 = Cluster(custom_name="test_cluster_1")
         test_cluster_1._storage_percent = 17

@@ -60,23 +60,43 @@ class IndexInfo:
         return "UNDEFINED"
 
     @property
-    def age(self):
+    def age(self) -> int:
+        """
+        Returns age of index
+
+        :return: age in days
+        :rtype: int
+        """
         if not self._age:
             self._age = self._calculate_age()
 
         return self._age
 
     @property
-    def index_type(self):
+    def index_type(self) -> str:
+        """
+        Returns index type
+
+        :return: index type
+        :rtype: str
+        """
         if not self._index_type:
             self._index_type = self._calculate_type()
 
         return self._index_type
 
     @property
-    def shard_size(self):
+    def shard_size(self) -> str:
+        """
+        Returns shard size of index in digital storage unit
+
+        :return: shard size
+        :rtype: str
+        """
         if not self._shard_size:
             store_size = getattr(self, "pri.store.size")
+            if store_size is None:
+                return self._shard_size
             if store_size[-1].lower() == "b":
                 match store_size[-2].lower():
                     case "k":
@@ -135,6 +155,12 @@ class Index:
 
     @property
     def info(self) -> IndexInfo:
+        """
+        Constructs and returns IndexInfo object for index
+
+        :return: IndexInfo object
+        :rtype: IndexInfo
+        """
         if not self._info:
             self._info = IndexInfo(
                 index_types_dict=self.index_types_dict, **self.info_response

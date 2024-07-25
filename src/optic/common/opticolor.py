@@ -4,7 +4,13 @@ class Opticolor:
     GREEN = "\033[92m"
     STOP = "\033[0m"
 
-    def disable_colors(self):
+    def disable_colors(self) -> None:
+        """
+        Makes Opticolor disable all colors
+
+        :return: None
+        :rtype: None
+        """
         self.RED = ""
         self.YELLOW = ""
         self.GREEN = ""

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 import dateutil.parser
+import pytest
 
 from optic.cluster.cluster import Cluster
 from optic.common.exceptions import OpticDataError
@@ -14,10 +15,6 @@ from optic.index.index_service import (
 
 
 class TestIndexService:
-    def test_get_clusters_and_groups(self):
-        # TODO
-        assert 1 == 1
-
     def test_parse_bytes(self):
         assert parse_bytes(1) == 1
         assert parse_bytes(1.0) == 1.0
@@ -30,31 +27,22 @@ class TestIndexService:
         assert parse_bytes("320tb") == 320 * 2**40
         assert parse_bytes("320.75gb") == 320.75 * 2**30
         assert parse_bytes("320.754b") == 320.754
-        # TODO: Import pytest for exception asserts
-        try:
-            parse_bytes("320.75yb")
-        except OpticDataError as e:
-            assert str(e) == "Unrecognized storage format: 320.75yb"
-        try:
-            parse_bytes("wasdf")
-        except OpticDataError as e:
-            assert str(e) == "Unrecognized storage format: wasdf"
-        try:
-            parse_bytes("waskb")
-        except OpticDataError as e:
-            assert str(e) == "Unrecognized storage format: waskb"
-        try:
-            parse_bytes("wasmb")
-        except OpticDataError as e:
-            assert str(e) == "Unrecognized storage format: wasmb"
-        try:
-            parse_bytes("wasgb")
-        except OpticDataError as e:
-            assert str(e) == "Unrecognized storage format: wasgb"
-        try:
-            parse_bytes("wastb")
-        except OpticDataError as e:
-            assert str(e) == "Unrecognized storage format: wastb"
+
+        def parse_bytes_exception_cases():
+            with pytest.raises(OpticDataError):
+                parse_bytes("320.75yb")
+            with pytest.raises(OpticDataError):
+                parse_bytes("wasdf")
+            with pytest.raises(OpticDataError):
+                parse_bytes("waskb")
+            with pytest.raises(OpticDataError):
+                parse_bytes("wasmb")
+            with pytest.raises(OpticDataError):
+                parse_bytes("wasgb")
+            with pytest.raises(OpticDataError):
+                parse_bytes("wastb")
+
+        parse_bytes_exception_cases()
 
     def test_get_index_info(self):
         test_cluster = Cluster(custom_name="test_cluster")
@@ -124,20 +112,31 @@ class TestIndexService:
         test_index.info._age = 10
         test_index.info._index_type = "type_1"
         test_index.info._shard_size = "150b"
+        # Assert age is greater than 3
         assert filter_function_list[0](test_index) is True
+        # Assert age is less than 3
         assert filter_function_list[1](test_index) is False
+        # Assert index size is greater than 200b
         assert filter_function_list[2](test_index) is True
+        # Assert index size is greater than 800kb
         assert filter_function_list[3](test_index) is True
+        # Assert shard size is greater than 200b
         assert filter_function_list[4](test_index) is False
+        # Assert shard size is greater than 800kb
         assert filter_function_list[5](test_index) is True
+        # Assert doc count is greater than 200
         assert filter_function_list[6](test_index) is True
+        # Assert doc count is less than 500
         assert filter_function_list[7](test_index) is False
+        # Assert type is not type_1
         assert filter_function_list[8](test_index) is False
+        # Assert type is not type_2
         assert filter_function_list[9](test_index) is True
+        # Assert type is not type_3
         assert filter_function_list[10](test_index) is True
 
     def test_parse_sort_by(self):
-        sort_list = [
+        sort_list = (
             "age",
             "name",
             "index-size",
@@ -146,7 +145,7 @@ class TestIndexService:
             "type",
             "primary-shards",
             "replica-shards",
-        ]
+        )
         sort_function_list = parse_sort_by(sort_list)
         index_info_dict = {
             "index": "test_name",
@@ -159,11 +158,19 @@ class TestIndexService:
         test_index.info._age = 10
         test_index.info._index_type = "type_1"
         test_index.info._shard_size = "150b"
+        # Assert that sort key is age
         assert sort_function_list[0](test_index) == 10
+        # Assert that sort key is name
         assert sort_function_list[1](test_index) == "test_name"
+        # Assert that sort key is index size
         assert sort_function_list[2](test_index) == 300 * 2**10
+        # Assert that sort key is shard size
         assert sort_function_list[3](test_index) == 150
+        # Assert that sort key is doc count
         assert sort_function_list[4](test_index) == 600
+        # Assert that sort key is index type
         assert sort_function_list[5](test_index) == "type_1"
+        # Assert that sort key is primary shards
         assert sort_function_list[6](test_index) == 1
+        # Assert that sort key is replica shards
         assert sort_function_list[7](test_index) == 0
