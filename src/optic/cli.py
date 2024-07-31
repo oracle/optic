@@ -66,20 +66,20 @@ def cli(ctx, settings):
     "--cluster-config-setup",
     prompt="Would you like to create a cluster configuration  "
     "file at ~/.optic/cluster-config.yaml?",
-    type=click.Choice(["y", "N"], case_sensitive=False),
+    type=click.Choice(["Y", "n"], case_sensitive=False),
     help="Prompts user for permission to create cluster config file",
 )
 @click.option(
     "--settings-setup",
     prompt="Would you like to set up a settings file at ~/.optic/optic-settings.yaml?",
-    type=click.Choice(["y", "N"], case_sensitive=False),
+    type=click.Choice(["Y", "n"], case_sensitive=False),
     help="Prompts user for permission to create cluster config file",
 )
 @click.option(
     "--shell-setup",
     prompt="Would you like to set up shell completion?  NOTE: This will involve  "
     "appending a command to source it to your shell configuration file",
-    type=click.Choice(["y", "N"], case_sensitive=False),
+    type=click.Choice(["Y", "n"], case_sensitive=False),
     help="Prompts user for permission to setup shell completion",
 )
 def init(cluster_config_setup, settings_setup, shell_setup):

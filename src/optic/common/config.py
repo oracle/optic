@@ -98,13 +98,18 @@ class ClusterConfig:
             for cluster_name, cluster_data in self.clusters.items():
                 if (cluster_name in self._desired_clusters) or default_behavior:
                     try:
+                        do_ssl = cluster_data.get("verify_ssl", True)
+                        if type(do_ssl) is not bool:
+                            raise OpticConfigurationFileError(
+                                "Unrecognized SSL option for " + cluster_name
+                            )
                         new_cluster = Cluster(
                             base_url=cluster_data["url"],
                             creds={
                                 "username": cluster_data["username"],
                                 "password": cluster_data["password"],
                             },
-                            verify_ssl=cluster_data["verify_ssl"],
+                            verify_ssl=do_ssl,
                             custom_name=cluster_name,
                         )
                         # Adds all extra properties from _desired_cluster_properties
