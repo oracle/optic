@@ -166,6 +166,7 @@ setup.
 
 #### Using pyenv
 This approach requires setting up pyenv first.  Learn more at [pyenv's repository](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation)
+Additionally, this approach requires the virtualenv plugin for pyenv.  Learn more at [pyenv virtualenv's repo](https://github.com/pyenv/pyenv-virtualenv)
 ```bash
 pyenv virtualenv <python-version> <virtual-env-name>
 
