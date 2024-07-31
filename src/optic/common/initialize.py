@@ -10,46 +10,43 @@ from os import environ
 from optic.common.exceptions import OpticConfigurationFileError
 
 SAMPLE_CLUSTER_CONFIG = """clusters:
-  'cluster_1':
-    url: 'https://testurl.com:46'
-    username: 'my_username1'
-    password: 'my_password'
-    verify_ssl: true
-  'cluster_2':
-    url: 'https://myurl.com:9200'
-    username: 'my_username2'
+  cluster_1:
+    url: https://testurl.com:46
+    username: my_username1
+    password: my_password
+  cluster_2:
+    url: https://myurl.com:9200
+    username: my_username2
     password: '****'
-    verify_ssl: true
-  'my_cluster':
-    url: 'https://onlineopensearchcluster.com:634'
-    username: 'my_username3'
+  my_cluster:
+    url: https://onlineopensearchcluster.com:634
+    username: my_username3
     password: '****'
-    verify_ssl: true
-  'cluster_3':
-    url: 'https://anotherurl.com:82'
-    username: 'my_username4'
+  cluster_3:
+    url: https://anotherurl.com:82
+    username: my_username4
     password: '****'
-    verify_ssl: true
 
 groups:
-  'my_group':
-    - 'cluster_1'
-    - 'cluster_2'
-    - 'cluster_3'
-  'g2':
-    - 'cluster_1'
-    - 'my_cluster'
+  my_group:
+    - cluster_1
+    - cluster_2
+    - cluster_3
+  g2:
+    - cluster_1
+    - my_cluster
+
 """
 
 SAMPLE_SETTINGS = """# File Paths
-settings_file_path: '~/.optic/optic-settings.yaml'
-default_cluster_config_file_path: '~/.optic/cluster-config.yaml'
+settings_file_path: ~/.optic/optic-settings.yaml
+default_cluster_config_file_path: ~/.optic/cluster-config.yaml
 
 # Terminal Customization
 disable_terminal_color: False
 
 # Cluster Info Settings
-default_cluster_info_byte_type: 'gb'
+default_cluster_info_byte_type: gb
 storage_percent_thresholds:
   GREEN: 80
   YELLOW: 85
@@ -62,6 +59,7 @@ default_index_type_patterns:
   ISM_MALFORMED: '(.*)-ism$'
   SYSTEM: '(^\\..*)$'
   DATED: '(.*)-(\\d{4})\\.(\\d{2})\\.(\\d{2})$'
+
 """
 
 

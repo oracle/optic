@@ -83,42 +83,41 @@ in [Settings](#settings-file-setup) and [Usage](#usage))
 * **A sample configuration file provided below <mark>can be generated using optic init</mark> (detailed in [Installation](#installation)):**
 ```yaml
 clusters:
-  'cluster_1':
-    url: 'https://testurl.com:46'
-    username: 'my_username1'
-    password: 'my_password'
+  cluster_1:
+    url: https://testurl.com:46
+    username: my_username1
+    password: my_password
     verify_ssl: true
-  'cluster_2':
-    url: 'https://myurl.com:9200'
-    username: 'my_username2'
+  cluster_2:
+    url: https://myurl.com:9200
+    username: my_username2
     password: '****'
-    verify_ssl: true
-  'my_cluster':
-    url: 'https://onlineopensearchcluster.com:634'
-    username: 'my_username3'
+  my_cluster:
+    url: https://onlineopensearchcluster.com:634
+    username: my_username3
     password: '****'
-    verify_ssl: true
-  'cluster_3':
-    url: 'https://anotherurl.com:82'
-    username: 'my_username4'
+  cluster_3:
+    url: https://anotherurl.com:82
+    username: my_username4
     password: '****'
-    verify_ssl: true
 groups:
-  'my_group':
-    - 'cluster_1'
-    - 'cluster_2'
-    - 'cluster_3'
-  'g2':
-    - 'cluster_1'
-    - 'my_cluster'
+  my_group:
+    - cluster_1
+    - cluster_2
+    - cluster_3
+  g2:
+    - cluster_1
+    - my_cluster
 
 
 ```
+* The verify_ssl field is optional (default is true if omitted)
+
 * The groups field is optional
 
 * Cluster and groups should not have identical names
 
-* It is recommended to put all settings string values in single quotes to prevent YAML escape characters from causing unintended behavior
+* It is recommended to put all string values containing YAML special characters in single quotes to prevent unintended behavior.  These characters can include {, }, [, ], ,, &, :, *, #, ?, |. -, <. >, =, !, %, @, \
 
 ### Settings File Setup
 * A properly formatted settings file is necessary to use the OPTIC toolset.
@@ -128,14 +127,14 @@ groups:
 * **A default settings file provided below <mark>can be generated using optic init</mark> (detailed in [Installation](#installation)):**
 ```yaml
 # File Paths
-settings_file_path: '~/.optic/optic-settings.yaml'
-default_cluster_config_file_path: '~/.optic/cluster-config.yaml'
+settings_file_path: ~/.optic/optic-settings.yaml
+default_cluster_config_file_path: ~/.optic/cluster-config.yaml
 
 # Terminal Customization
 disable_terminal_color: False
 
 # Cluster Info Settings
-default_cluster_info_byte_type: 'gb'
+default_cluster_info_byte_type: gb
 storage_percent_thresholds:
   GREEN: 80
   YELLOW: 85
@@ -150,12 +149,12 @@ default_index_type_patterns:
   DATED: '(.*)-(\d{4})\.(\d{2})\.(\d{2})$'
 
 ```
-* It is recommended to put all settings string values in single quotes to prevent YAML escape characters from causing unintended behavior
+* It is recommended to put all string values containing YAML special characters in single quotes to prevent unintended behavior.  These characters can include {, }, [, ], ,, &, :, *, #, ?, |. -, <. >, =, !, %, @, \
 
 ## Installation
 ### Clone Repository
 * Navigate to a directory where you would like to have the OPTIC repository using ```cd <directory-path>```
-* Clone the following repo: [https://cloudlab.us.oracle.com/gbucs/gpdaf/opensearch/optic](https://cloudlab.us.oracle.com/gbucs/gpdaf/opensearch/optic)
+* Clone the following repo: [https://alm.oraclecorp.com/oci/#projects/opensearch/scm/optic.git/tree?revision=main](https://alm.oraclecorp.com/oci/#projects/opensearch/scm/optic.git/tree?revision=main)
 * Enter the optic directory that was just created using ```cd optic```
 
 ### Prepare Python Virtual Environment
