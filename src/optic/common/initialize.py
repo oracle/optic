@@ -91,6 +91,8 @@ def setup_cluster_config() -> None:
     :raises OpticConfigurationFileError: if file already exists
     """
     abs_path = os.path.expanduser("~/.optic/cluster-config.yaml")
+    if not os.path.exists(os.path.expanduser("~/.optic")):
+        os.makedirs(os.path.expanduser("~/.optic"))
     if os.path.exists(abs_path):
         raise OpticConfigurationFileError("Error: File already exists at " + abs_path)
     f = open(abs_path, "w")
@@ -109,6 +111,8 @@ def setup_settings() -> None:
     :raises OpticConfigurationFileError: if file already exists
     """
     abs_path = os.path.expanduser("~/.optic/optic-settings.yaml")
+    if not os.path.exists(os.path.expanduser("~/.optic")):
+        os.makedirs(os.path.expanduser("~/.optic"))
     if os.path.exists(abs_path):
         raise OpticConfigurationFileError("Error: File already exists at " + abs_path)
     f = open(abs_path, "w")
@@ -141,6 +145,8 @@ def setup_shell_completion(shell_env) -> None:
     """
     match shell_env:
         case "/bin/zsh":
+            if not os.path.exists(os.path.expanduser("~/.optic")):
+                os.makedirs(os.path.expanduser("~/.optic"))
             abs_path = os.path.expanduser("~/.optic/.optic-complete.zsh")
             if os.path.exists(abs_path):
                 raise OpticConfigurationFileError(
@@ -160,6 +166,8 @@ def setup_shell_completion(shell_env) -> None:
             f.close()
             print("Added shell completion script sourcing to ~/.zshrc")
         case "/bin/bash":
+            if not os.path.exists(os.path.expanduser("~/.optic")):
+                os.makedirs(os.path.expanduser("~/.optic"))
             abs_path = os.path.expanduser("~/.optic/.optic-complete.bash")
             if os.path.exists(abs_path):
                 raise OpticConfigurationFileError(
