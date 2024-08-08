@@ -1,5 +1,6 @@
 from optic.cluster.cluster import Cluster, ClusterHealth
 from optic.cluster.cluster_service import get_cluster_info
+from optic.common.config import ClusterConfig
 
 
 class TestClusterClass:
@@ -61,6 +62,7 @@ class TestClusterClass:
 
 class TestClusterService:
     def test_get_cluster_info(self):
+        config_info = ClusterConfig({}, [], {})
         test_cluster_1 = Cluster(custom_name="test_cluster_1")
         test_cluster_1._storage_percent = 17
         test_cluster_1._health = ClusterHealth(**{"status": "green"})
@@ -71,7 +73,8 @@ class TestClusterService:
         test_cluster_3._storage_percent = 59
         test_cluster_3._health = ClusterHealth(**{"status": "yellow"})
         cluster_list = [test_cluster_1, test_cluster_2, test_cluster_3]
-        cluster_dict = get_cluster_info(cluster_list)
+        config_info._selected_cluster_objects = cluster_list
+        cluster_dict = get_cluster_info(config_info)
         assert cluster_dict[0]["name"] == "test_cluster_1"
         assert cluster_dict[1]["name"] == "test_cluster_2"
         assert cluster_dict[2]["name"] == "test_cluster_3"

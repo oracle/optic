@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.0
+# ** OPTIC
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -6,7 +6,7 @@
 
 from optic.alias.alias import Alias
 from optic.common.api import OpenSearchAction
-from optic.common.exceptions import OpticDataError
+from optic.common.exceptions import OpticConfigurationFileError, OpticDataError
 from optic.index.index import Index
 
 
@@ -107,6 +107,10 @@ class Cluster:
         """
         if not self._storage_percent:
             print("Getting storage percent for", self.custom_name)
+            if self.byte_type != "mb" and self.byte_type != "gb":
+                raise OpticConfigurationFileError(
+                    "Invalid byte type in " + self.custom_name + " request"
+                )
             api = OpenSearchAction(
                 base_url=self.base_url,
                 usr=self.creds["username"],

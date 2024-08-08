@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.0
+# ** OPTIC
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -7,7 +7,7 @@
 from terminaltables import AsciiTable
 
 from optic.common.exceptions import OpticDataError
-from optic.common.opticolor import Opticolor
+from optic.common.optic_color import OpticColor
 
 
 def parse_bytes(bytes_string) -> int | float:
@@ -112,7 +112,7 @@ def parse_sort_by(sort_by) -> list:
     """
     Parses tuple of desired sort into list of lambdas for use as sort() keys
 
-    :param tuple sort_by: tuple with desired sort types
+    :param list sort_by: tuple with desired sort types
     :return: list of lambdas
     :rtype: list
     """
@@ -176,7 +176,7 @@ def filter_and_sort_indices(cluster_list, filters, sort_by) -> list:
 
     :param cluster_list: list of clusters
     :param dict filters: dictionary with filter information
-    :param tuple sort_by: tuple with desired sort types
+    :param list sort_by: tuple with desired sort types
     :return: list of filtered indexes
     :rtype: list
     """
@@ -192,14 +192,34 @@ def filter_and_sort_indices(cluster_list, filters, sort_by) -> list:
     return index_list
 
 
-def get_index_info(index_list) -> list:
+def get_index_info(config_info, filters=None, sort_by=None) -> list:
     """
     Retrieves and packages Index information into a list of dictionaries
 
-    :param list index_list: list of Index objects
+    :param ClusterConfig config_info: Cluster Configuration info object
+    :param dict filters: dictionary with filter information
+    :param list sort_by: tuple with desired sort types
     :return: list of dictionaries containing index information
     :rtype: list
     """
+    if filters is None:
+        filters = {
+            "write_alias_only": None,
+            "min_age": None,
+            "max_age": None,
+            "min_index_size": None,
+            "max_index_size": None,
+            "min_shard_size": None,
+            "max_shard_size": None,
+            "min_doc_count": None,
+            "max_doc_count": None,
+            "type_filter": [],
+        }
+    if sort_by is None:
+        sort_by = []
+    index_list = filter_and_sort_indices(
+        config_info.selected_cluster_objects, filters, sort_by
+    )
     index_dicts = []
     for index in index_list:
         index_dicts.append(
@@ -228,9 +248,9 @@ def print_index_info(index_dicts, no_color) -> None:
     :return: None
     :rtype: None
     """
-    opticolor = Opticolor()
+    optic_color = OpticColor()
     if no_color:
-        opticolor.disable_colors()
+        optic_color.disable_colors()
 
     print_data = [
         [
@@ -257,9 +277,9 @@ def print_index_info(index_dicts, no_color) -> None:
                 stats["shard_size"],
                 stats["pri"],
                 stats["rep"],
-                (opticolor.GREEN if stats["write_alias"] else opticolor.RED)
+                (optic_color.GREEN if stats["write_alias"] else optic_color.RED)
                 + str(stats["write_alias"])
-                + opticolor.STOP,
+                + optic_color.STOP,
                 stats["cluster"],
             ]
         )

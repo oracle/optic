@@ -4,15 +4,19 @@
 * **[What is OPTIC?](#what-is-optic)**
 * **[Requirements](#Requirements)**
   * [Python3 Installation](#python3-installation)
-  * [Pip Installation](#pip-installation)
   * [Cluster Configuration File Setup](#cluster-configuration-file-setup)
   * [Settings File Setup](#settings-file-setup)
 * **[Installation](#installation)**
-  * [Clone Repository](#clone-repository)
   * [Prepare Python Virtual Environment](#prepare-python-virtual-environment)
+  * [Clone Repository](#clone-repository)
   * [Install Project Dependencies](#install-project-dependencies)
   * [Initialize OPTIC](#initialize-optic)
-* **[Usage](#usage)**
+* **[CLI Usage](#cli-usage)**
+* **[OPTIC as Library](#optic-as-library)**
+  * [Common Patterns](#common-patterns)
+  * [get_cluster_info()](#get_cluster_info)
+  * [get_index_info()](#get_index_info)
+  * [get_alias_info()](#get_alias_info)
 
 ## What is OPTIC?
 OPTIC (OpenSearch Tools for Indices and Clusters) is a Python language tool suite designed to offer OpenSearch Engineers
@@ -20,7 +24,7 @@ utilities to troubleshoot, analyze, and make changes to OpenSearch clusters and 
 both a rich command line experience and a library that can be called from other pieces of code.
 
 OPTIC's command line utilities are organized into a tool domain hierarchy (shown below).  This approach allows OPTIC tools to be
-modular, reuse information, and be intuitively called from the command line (described in [Usage](#usage)).  Currently, OPTIC supports:
+modular, reuse information, and be intuitively called from the command line (described in [CLI Usage](#cli-usage)).  Currently, OPTIC supports:
 - ```cluster```:  Tool domain containing tools related to OpenSearch clusters
   - ```info```: Tool displaying key information (Health Status, Storage Percentage) about clusters
 - ```index```:  Tool domain containing tools related to OpenSearch indices
@@ -61,23 +65,11 @@ modular, reuse information, and be intuitively called from the command line (des
 
 If you see an error message, you can install Python using the official [Python website](https://www.python.org/downloads/)
 
-### Pip Installation:
-* Enter the following in the command line:
-  ```
-  pip -V
-  ```
-
-* Depending on your system, you may have to enter:
-  ```
-  python3 -m pip -V
-  ```
-If pip is not installed correctly, it can be installed using the [official instructions](https://pip.pypa.io/en/stable/installation/)
-
 ### Cluster Configuration File Setup
 * A properly formatted cluster configuration file is necessary to use the OPTIC toolset.
 * The default path for this configuration file is ```~/.optic/cluster-config.yaml``` (Can be defined in settings)
 * A custom configuration file path can be specified in the settings file or using the Command Line Interface (detailed
-in [Settings](#settings-file-setup) and [Usage](#usage))
+in [Settings](#settings-file-setup) and [CLI Usage](#cli-usage))
 * **The Configuration File allows users to easily store networking and authentication information for communicating with their OpenSearch Clusters.**
 * **It also allows users to collect clusters into custom groups that can simplify cluster information gathering and administration**
 * **A sample configuration file provided below <mark>can be generated using optic init</mark> (detailed in [Installation](#installation)):**
@@ -122,7 +114,7 @@ groups:
 ### Settings File Setup
 * A properly formatted settings file is necessary to use the OPTIC toolset.
 * The default path for this configuration file is ```~/.optic/optic-settings.yaml```
-* A custom settings file path can be specified using the Command Line Interface (detailed in [Usage](#usage))
+* A custom settings file path can be specified using the Command Line Interface (detailed in [CLI Usage](#cli-usage))
 * **The Settings File allows users to easily set preferences for their OPTIC tools.**
 * **A default settings file provided below <mark>can be generated using optic init</mark> (detailed in [Installation](#installation)):**
 ```yaml
@@ -152,11 +144,6 @@ default_index_type_patterns:
 * It is recommended to put all string values containing YAML special characters in single quotes to prevent unintended behavior.  These characters can include {, }, [, ], ,, &, :, *, #, ?, |. -, <. >, =, !, %, @, \
 
 ## Installation
-### Clone Repository
-* Navigate to a directory where you would like to have the OPTIC repository using ```cd <directory-path>```
-* Clone the following repo: [https://alm.oraclecorp.com/oci/#projects/opensearch/scm/optic.git/tree?revision=main](https://alm.oraclecorp.com/oci/#projects/opensearch/scm/optic.git/tree?revision=main)
-* Enter the optic directory that was just created using ```cd optic```
-
 ### Prepare Python Virtual Environment
 We'll start by creating a new Python virtual environment to isolate our project's dependencies from other projects or
 system-wide installations. This ensures that your project runs consistently on any machine with the same environment
@@ -188,6 +175,11 @@ python3 -m venv env
 source env/bin/activate
 ```
 
+### Clone Repository
+* **If you do not wish to locally download OPTIC source code, this step can be skipped**
+* Navigate to a directory where you would like to have the OPTIC repository using ```cd <directory-path>```
+* Clone the following repo: [https://alm.oraclecorp.com/oci/#projects/opensearch/scm/optic.git/tree?revision=main](https://alm.oraclecorp.com/oci/#projects/opensearch/scm/optic.git/tree?revision=main)
+* Enter the optic directory that was just created using ```cd optic```
 
 ### Install Project Dependencies
 * Once your virtual environment is active, upgrade the pip package manager to the latest version using:
@@ -197,12 +189,23 @@ pip install --upgrade pip
 * If you wish to use OPTIC as a user, follow the instructions directly below.  If you wish to develop OPTIC, follow the
 Developer Instructions
 #### User Instructions
-* This command will install the project dependencies and allow use of the command line tools.
+* If you did not locally clone the repository, you may install using one of:
+```bash
+pip install git+<https_url>
+# Example
+pip install git+https://alm.oraclecorp.com/oci/s/oci_opensearch_94656/scm/optic.git
+
+pip install git+<ssh_key>
+# Example
+pip install git+ssh://user@alm.oraclecorp.com/oci_opensearch_94656/optic.git
+```
+* This command will install the project dependencies from a local repository in the current working directory and allow use of the command line tools.
 ```bash
 pip install .
 ```
 #### Developer Instructions
-* This command will install the standard project dependencies and development dependencies in editable mode, meaning
+* This command will install the standard project dependencies and development dependencies from the current working directory.
+* These will be installed in editable mode, meaning
 any changes made to the source files will be immediately available without reinstallation.
 ```bash
 pip install -e '.[dev]'
@@ -220,7 +223,7 @@ optic init
 ```
 This will prompt the user for permission to write default configuration files and to set up automatic shell completion
 
-## Usage
+## CLI Usage
 To use the OPTIC Command Line Interface, use the following format
 ```
 optic <tool_domain> <tool_name> <command_line_options>
@@ -240,4 +243,225 @@ optic <tool_domain> <tool_name> --help
 To run OPTIC with an alternate settings file path, enter:
 ```
 optic --settings-path <custom_file_path> <tool_domain> <tool_name>
+```
+
+## OPTIC as Library
+OPTIC is also designed to be able to be used as a library by external.  OPTIC exposes various functions and classes 
+(listed in the top level __init__.py) for developers to call externally.  The recommended way to call OPTIC functionality
+is described below by example.
+
+### Common Patterns
+The recommended way to call OPTIC functionality from code is generally as follows:
+* Define cluster information programmatically (see examples below)
+* Specify desired cluster and cluster group names to act on in a list (this can be any subset of the ones defined above)
+* Specify any specific cluster properties required for an action in a dictionary (these vary by query and are provided below)
+* This information is provided to OPTIC by constructing a ClusterConfig object using the information above
+* Call the desired action w/ the ClusterConfig object as an argument and use any returned data as desired
+
+### get_cluster_info()
+Properties specific to get_cluster_info are:
+
+    byte_type - specify a storage unit for the query (mb or gb)
+
+The sample code below queries cluster information from a selection of clusters and prints the results:
+```python
+import optic
+import json
+
+cluster_info = {
+    "clusters": {
+        "cluster_1": {
+            "url" : "https://exampleurl.com",
+            "username": "example_username",
+            "password": "****",
+            "verify_ssl": False
+        },
+        "cluster_2": {
+            "url" : "https://exampleurl2.com",
+            "username": "example_username",
+            "password": "****",
+        },
+        "cluster_3": {
+            "url" : "https://exampleurl3.com",
+            "username": "example_username",
+            "password": "****",
+        },
+        "cluster_4": {
+            "url" : "https://exampleurl4.com",
+            "username": "example_username",
+            "password": "****",
+        }
+    },
+    "groups": {
+        "group1": [
+            "cluster_3",
+            "cluster_4"
+        ],
+        "g2": [
+            "cluster_2",
+            "cluster_3"
+        ]
+    }
+}
+desired_clusters = ["cluster_3", "g2"]
+desired_cluster_properties = {
+    "byte_type": "mb"
+}
+cluster_generator = optic.ClusterConfig(cluster_info, desired_clusters, desired_cluster_properties)
+
+cluster_info_response = optic.get_cluster_info(cluster_generator)
+print("CLUSTER INFORMATION")
+print(json.dumps(cluster_info_response, indent=3))
+```
+### get_index_info()
+Properties specific to get_index_info are:
+
+    index_search_pattern - specify a glob search pattern for the query
+    index_types_dict - specify a dictionary with index_type_name -> regular_expression pairs
+
+Additionally, get_index_info can support two more <mark>optional</mark> parameters that allow for more advanced filtering and sorting of data:
+
+    filters - a dictionary that allows users to specify filters to exclude indices that meet certain condtions
+    sort_by - a list that allows users to specify sort order for returned index data
+
+    filters allows filters of the following types:
+          "write_alias_only" - (bool) whether to report only indices that are targets of write aliases (True: only write alias targets reported, False: write alias targets excluded, None: no effect)
+          "min_age" - (int) a minimum age in days for indices to be reported
+          "max_age" - (int) a maximum age in days for indices to be reported
+          "min_index_size" - (string) a minimum index size for indices to be reported (e.g. "7mb", "4.23gb", "1kb", etc)
+          "max_index_size - (string) a maximum index size for indices to be reported (e.g. "7mb", "4.23gb", "1kb", etc)
+          "min_shard_size" - (string) a minimum shard size for indices to be reported (e.g. "7mb", "4.23gb", "1kb", etc)
+          "max_shard_size" - (string) a maximum shard size for indices to be reported (e.g. "7mb", "4.23gb", "1kb", etc)
+          "min_doc_count" - (int) a minimum document count for indices to be reported
+          "max_doc_count" - (int) a maximum document count for indices to be reported
+          "type_filter"- (list[string]) a list of index types (as specified in index_types_dict) to exclude from report
+
+    sort_by allows sorting by (age, name, write-alias, index-size, shard-size, doc-count, type, primary-shards, replica-shards)
+
+
+
+The sample code below queries index information from a cluster and prints the results:
+```python
+import optic
+import json
+
+cluster_info = {
+    "clusters": {
+        "cluster_1": {
+            "url" : "https://exampleurl.com",
+            "username": "example_username",
+            "password": "****",
+            "verify_ssl": False
+        },
+        "cluster_2": {
+            "url" : "https://exampleurl2.com",
+            "username": "example_username",
+            "password": "****",
+        },
+        "cluster_3": {
+            "url" : "https://exampleurl3.com",
+            "username": "example_username",
+            "password": "****",
+        },
+        "cluster_4": {
+            "url" : "https://exampleurl4.com",
+            "username": "example_username",
+            "password": "****",
+        }
+    },
+    "groups": {
+        "group1": [
+            "cluster_3",
+            "cluster_4"
+        ],
+        "g2": [
+            "cluster_2",
+            "cluster_3"
+        ]
+    }
+}
+desired_clusters = ["cluster_1"]
+filters = {
+    "write_alias_only": None,
+    "min_age": 10,
+    "max_age": None,
+    "min_index_size": None,
+    "max_index_size": None,
+    "min_shard_size": "100kb",
+    "max_shard_size": None,
+    "min_doc_count": None,
+    "max_doc_count": None,
+    "type_filter": ["SYSTEM"],
+}
+sort_by = ["age"]
+types_dict = {
+  "ISM": '(.*)-ism-(\\d{6})$',
+  "ISM_MALFORMED": '(.*)-ism$',
+  "SYSTEM": '(^\\..*)$',
+  "DATED": '(.*)-(\\d{4})\\.(\\d{2})\\.(\\d{2})$',
+}
+desired_cluster_properties = {
+    "index_search_pattern": "*",
+    "index_types_dict": types_dict,
+}
+cluster_generator = optic.ClusterConfig(cluster_info, desired_clusters, desired_cluster_properties)
+index_info_response = optic.get_index_info(cluster_generator, filters, sort_by)
+print("INDEX INFORMATION")
+print(json.dumps(index_info_response, indent=3))
+```
+
+### get_alias_info()
+Properties specific to get_alias_info are:
+
+    index_search_pattern - specify a glob search pattern for the query
+
+The sample code below queries alias information from a selection of clusters and prints the results:
+```python
+import optic
+import json
+
+cluster_info = {
+    "clusters": {
+        "cluster_1": {
+            "url" : "https://exampleurl.com",
+            "username": "example_username",
+            "password": "****",
+            "verify_ssl": False
+        },
+        "cluster_2": {
+            "url" : "https://exampleurl2.com",
+            "username": "example_username",
+            "password": "****",
+        },
+        "cluster_3": {
+            "url" : "https://exampleurl3.com",
+            "username": "example_username",
+            "password": "****",
+        },
+        "cluster_4": {
+            "url" : "https://exampleurl4.com",
+            "username": "example_username",
+            "password": "****",
+        }
+    },
+    "groups": {
+        "group1": [
+            "cluster_3",
+            "cluster_4"
+        ],
+        "g2": [
+            "cluster_2",
+            "cluster_3"
+        ]
+    }
+}
+desired_clusters = ["cluster_3", "g2"]
+desired_cluster_properties = {
+    "index_search_pattern": "*",
+}
+cluster_generator = optic.ClusterConfig(cluster_info, desired_clusters, desired_cluster_properties)
+
+cluster_info_response = optic.get_alias_info(cluster_generator)
+print("ALIAS INFORMATION")
+print(json.dumps(cluster_info_response, indent=3))
 ```
