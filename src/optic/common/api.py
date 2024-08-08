@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.0
+# ** OPTIC
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -38,7 +38,7 @@ class OpenSearchAction:
                     self.base_url + self.query,
                     verify=self.verify_ssl,
                     auth=basic,
-                    timeout=3,
+                    timeout=6,
                 )
                 self._response.raise_for_status()
             except requests.exceptions.RequestException as err:

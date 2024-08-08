@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.0
+# ** OPTIC
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -6,19 +6,19 @@
 
 from terminaltables import AsciiTable
 
-from optic.common.opticolor import Opticolor
+from optic.common.optic_color import OpticColor
 
 
-def get_cluster_info(cluster_list) -> list:
+def get_cluster_info(config_info) -> list:
     """
     Retrieves and packages Cluster information into a list of dictionaries
 
-    :param list cluster_list: list of Cluster objects
+    :param ClusterConfig config_info: Cluster Configuration info object
     :return: list of dictionaries containing cluster information
     :rtype: list
     """
     clusters_dicts = []
-    for cluster in cluster_list:
+    for cluster in config_info.selected_cluster_objects:
         usage = cluster.storage_percent
         status = cluster.health.status
         clusters_dicts.append(
@@ -37,28 +37,28 @@ def print_cluster_info(cluster_dicts, no_color, storage_percent_thresholds) -> N
     :return: None
     :rtype: None
     """
-    opticolor = Opticolor()
+    optic_color = OpticColor()
     if no_color:
-        opticolor.disable_colors()
+        optic_color.disable_colors()
 
     print_data = [["Cluster", "Status", "Storage Use (%)"]]
     for stats in cluster_dicts:
         status = stats["status"]
         match status:
             case "red":
-                status = opticolor.RED + status + opticolor.STOP
+                status = optic_color.RED + status + optic_color.STOP
             case "yellow":
-                status = opticolor.YELLOW + status + opticolor.STOP
+                status = optic_color.YELLOW + status + optic_color.STOP
             case "green":
-                status = opticolor.GREEN + status + opticolor.STOP
+                status = optic_color.GREEN + status + optic_color.STOP
 
         usage = stats["usage"]
         if usage < storage_percent_thresholds["GREEN"]:
-            usage = opticolor.GREEN + str(usage) + opticolor.STOP
+            usage = optic_color.GREEN + str(usage) + optic_color.STOP
         elif usage < storage_percent_thresholds["YELLOW"]:
-            usage = opticolor.YELLOW + str(usage) + opticolor.STOP
+            usage = optic_color.YELLOW + str(usage) + optic_color.STOP
         elif usage <= storage_percent_thresholds["RED"]:
-            usage = opticolor.RED + str(usage) + opticolor.STOP
+            usage = optic_color.RED + str(usage) + optic_color.STOP
 
         print_data.append([stats["name"], status, usage])
 

@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.0
+# ** OPTIC
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -34,13 +34,13 @@ def yaml_load(file_path) -> dict:
 
 
 class ClusterConfig:
-    def __init__(self, cluster_data, desired_clusters, desired_cluster_properties):
+    def __init__(self, cluster_data, selected_clusters, selected_cluster_properties):
         self._data = cluster_data
-        self._desired_clusters = desired_clusters
-        self._desired_cluster_properties = desired_cluster_properties
+        self._selected_clusters = selected_clusters
+        self._selected_cluster_properties = selected_cluster_properties
         self._groups = None
         self._clusters = None
-        self._desired_cluster_objects = None
+        self._selected_cluster_objects = None
 
     @property
     def groups(self) -> dict:
@@ -72,31 +72,31 @@ class ClusterConfig:
         return self._clusters
 
     @property
-    def desired_cluster_objects(self) -> list[Cluster]:
+    def selected_cluster_objects(self) -> list[Cluster]:
         """
         Makes list of cluster objects from depending on desired
 
         :return: List of cluster objects
         :rtype: list[Cluster]
         """
-        if self._desired_cluster_objects is None:
-            self._desired_cluster_objects = []
+        if self._selected_cluster_objects is None:
+            self._selected_cluster_objects = []
 
             # Replaces cluster group names with associated clusters
             if self.groups:
                 for group_name, group_clusters in self.groups.items():
-                    if group_name in self._desired_clusters:
-                        self._desired_clusters.extend(group_clusters)
-                        self._desired_clusters.remove(group_name)
+                    if group_name in self._selected_clusters:
+                        self._selected_clusters.extend(group_clusters)
+                        self._selected_clusters.remove(group_name)
             # Delete repeats
-            self._desired_clusters = list(set(self._desired_clusters))
+            self._selected_clusters = list(set(self._selected_clusters))
 
             # If no clusters specified, do all clusters
-            default_behavior = len(self._desired_clusters) == 0
+            default_behavior = len(self._selected_clusters) == 0
 
             # If a cluster is in desired cluster list, makes object out of it
             for cluster_name, cluster_data in self.clusters.items():
-                if (cluster_name in self._desired_clusters) or default_behavior:
+                if (cluster_name in self._selected_clusters) or default_behavior:
                     try:
                         do_ssl = cluster_data.get("verify_ssl", True)
                         if type(do_ssl) is not bool:
@@ -116,7 +116,7 @@ class ClusterConfig:
                         for (
                             attribute,
                             value,
-                        ) in self._desired_cluster_properties.items():
+                        ) in self._selected_cluster_properties.items():
                             if attribute not in new_cluster.__dict__:
                                 raise OpticConfigurationFileError(
                                     "Non-existent attribute "
@@ -124,19 +124,19 @@ class ClusterConfig:
                                     + " specified in desired_cluster_properties"
                                 )
                             setattr(new_cluster, attribute, value)
-                        self._desired_cluster_objects.append(new_cluster)
-                        if self._desired_clusters:
-                            self._desired_clusters.remove(cluster_name)
+                        self._selected_cluster_objects.append(new_cluster)
+                        if self._selected_clusters:
+                            self._selected_clusters.remove(cluster_name)
                     except KeyError as e:
                         raise OpticConfigurationFileError(
                             "Improperly formatted fields in cluster " + cluster_name
                         ) from e
             # Notifies if any non-existent clusters provided
-            for error_cluster in self._desired_clusters:
+            for error_cluster in self._selected_clusters:
                 print(
                     error_cluster, "is not present in cluster configuration information"
                 )
-        return self._desired_cluster_objects
+        return self._selected_cluster_objects
 
 
 class Settings:

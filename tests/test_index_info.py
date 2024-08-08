@@ -4,6 +4,7 @@ import dateutil.parser
 import pytest
 
 from optic.cluster.cluster import Cluster
+from optic.common.config import ClusterConfig
 from optic.common.exceptions import OpticDataError
 from optic.index.index import Index
 from optic.index.index_service import (
@@ -45,6 +46,7 @@ class TestIndexService:
         parse_bytes_exception_cases()
 
     def test_get_index_info(self):
+        config_info = ClusterConfig({}, [], {})
         test_cluster = Cluster(custom_name="test_cluster")
         test_cluster._index_list = []
         sim_response = {
@@ -69,8 +71,8 @@ class TestIndexService:
         test_cluster._index_list.append(test_index)
 
         test_cluster_list = [test_cluster]
-
-        dict_response = get_index_info(test_cluster_list[0]._index_list)
+        config_info._selected_cluster_objects = test_cluster_list
+        dict_response = get_index_info(config_info)
         assert dict_response[0]["name"] == "stockindex"
         assert (
             dict_response[0]["age"]

@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.0
+# ** OPTIC
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -12,11 +12,7 @@ from optic.cluster.cluster_service import get_cluster_info, print_cluster_info
 from optic.common.config import ClusterConfig, Settings, yaml_load
 from optic.common.exceptions import OpticError
 from optic.common.initialize import initialize_optic
-from optic.index.index_service import (
-    filter_and_sort_indices,
-    get_index_info,
-    print_index_info,
-)
+from optic.index.index_service import get_index_info, print_index_info
 
 
 def default_from_settings(setting_name) -> type[Option] | None:
@@ -164,7 +160,7 @@ def info(
         config_info = ClusterConfig(
             yaml_load(cluster_config), desired_clusters, desired_cluster_properties
         )
-        cluster_info_list = get_cluster_info(config_info.desired_cluster_objects)
+        cluster_info_list = get_cluster_info(config_info)
         print_cluster_info(cluster_info_list, no_color, storage_percent_thresholds)
     except OpticError as e:
         print(e)
@@ -319,8 +315,9 @@ def info(
             "max_shard_size": max_shard_size,
             "min_doc_count": min_doc_count,
             "max_doc_count": max_doc_count,
-            "type_filter": type_filter,
+            "type_filter": list(type_filter),
         }
+        sort_by = list(sort_by)
         desired_clusters = list(clusters)
         desired_cluster_properties = {
             "index_search_pattern": search_pattern,
@@ -329,10 +326,7 @@ def info(
         config_info = ClusterConfig(
             yaml_load(cluster_config), desired_clusters, desired_cluster_properties
         )
-        index_list = filter_and_sort_indices(
-            config_info.desired_cluster_objects, filters, sort_by
-        )
-        index_info_dict = get_index_info(index_list)
+        index_info_dict = get_index_info(config_info, filters, sort_by)
         print_index_info(index_info_dict, no_color)
     except OpticError as e:
         print(e)
@@ -399,11 +393,7 @@ def info(ctx, clusters, cluster_config, search_pattern, no_color):
         config_info = ClusterConfig(
             yaml_load(cluster_config), desired_clusters, desired_cluster_properties
         )
-        alias_list = []
-        for cluster in config_info.desired_cluster_objects:
-            alias_list.extend(cluster.alias_list)
-
-        alias_info_list = get_alias_info(alias_list)
+        alias_info_list = get_alias_info(config_info)
         print_alias_info(alias_info_list, no_color)
     except OpticError as e:
         print(e)

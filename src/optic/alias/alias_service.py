@@ -1,4 +1,4 @@
-# ** OPTIC version 1.0.0
+# ** OPTIC
 # **
 # ** Copyright (c) 2024 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
@@ -6,17 +6,21 @@
 
 from terminaltables import AsciiTable
 
-from optic.common.opticolor import Opticolor
+from optic.common.optic_color import OpticColor
 
 
-def get_alias_info(alias_list) -> list:
+def get_alias_info(config_info) -> list:
     """
     Retrieves and packages Alias information into a list of dictionaries
 
-    :param list alias_list: list of Alias objects
+    :param ClusterConfig config_info: Cluster Configuration info object
     :return: list of dictionaries containing alias information
     :rtype: list
     """
+    alias_list = []
+    for cluster in config_info.selected_cluster_objects:
+        alias_list.extend(cluster.alias_list)
+
     alias_dicts = []
     for alias in alias_list:
         target_list = []
@@ -44,9 +48,9 @@ def print_alias_info(alias_dicts, no_color) -> None:
     :return: None
     :rtype: None
     """
-    opticolor = Opticolor()
+    optic_color = OpticColor()
     if no_color:
-        opticolor.disable_colors()
+        optic_color.disable_colors()
 
     for alias in alias_dicts:
         print_data = [
@@ -64,18 +68,30 @@ def print_alias_info(alias_dicts, no_color) -> None:
                 print_data.append(
                     [
                         stats["index_name"],
-                        (opticolor.GREEN if stats["write_target"] else opticolor.RED)
+                        (
+                            optic_color.GREEN
+                            if stats["write_target"]
+                            else optic_color.RED
+                        )
                         + str(stats["write_target"])
-                        + opticolor.STOP,
-                        (opticolor.GREEN if stats["filter"] else opticolor.RED)
+                        + optic_color.STOP,
+                        (optic_color.GREEN if stats["filter"] else optic_color.RED)
                         + str(stats["filter"])
-                        + opticolor.STOP,
-                        (opticolor.GREEN if stats["routing_index"] else opticolor.RED)
+                        + optic_color.STOP,
+                        (
+                            optic_color.GREEN
+                            if stats["routing_index"]
+                            else optic_color.RED
+                        )
                         + str(stats["routing_index"])
-                        + opticolor.STOP,
-                        (opticolor.GREEN if stats["routing_search"] else opticolor.RED)
+                        + optic_color.STOP,
+                        (
+                            optic_color.GREEN
+                            if stats["routing_search"]
+                            else optic_color.RED
+                        )
                         + str(stats["routing_search"])
-                        + opticolor.STOP,
+                        + optic_color.STOP,
                     ]
                 )
                 cluster_name = stats["cluster_name"]
