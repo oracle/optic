@@ -191,13 +191,10 @@ Developer Instructions
 #### User Instructions
 * If you did not locally clone the repository, you may install using one of:
 ```bash
-pip install git+<https_url>
+pip install git+<git-repo-URL>
+
 # Example
 pip install git+https://alm.oraclecorp.com/oci/s/oci_opensearch_94656/scm/optic.git
-
-pip install git+<ssh_key>
-# Example
-pip install git+ssh://user@alm.oraclecorp.com/oci_opensearch_94656/optic.git
 ```
 * This command will install the project dependencies from a local repository in the current working directory and allow use of the command line tools.
 ```bash
