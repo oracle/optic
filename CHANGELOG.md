@@ -1,9 +1,15 @@
-Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2024-2025, Oracle and/or its affiliates. All rights reserved.
 
 # OPTIC CHANGELOG
 
 All notable changes to the OPTIC project will be documented in
 this file. This project adheres to [Semantic Versioning](http://semver.org/).
+
+# 1.1.0
+* chore: 🚨 ignore safe linter warnings when using os module
+* chore: 🔧 sort flake8 ignored error codes
+* chore: 🚨 fix linter warnings
+* chore: ⬆️ upgrade dependencies
 
 # 1.0.1
 * docs: 📝 updated documentation and CHANGELOG

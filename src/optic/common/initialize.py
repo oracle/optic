@@ -152,7 +152,9 @@ def setup_shell_completion(shell_env) -> None:
                 raise OpticConfigurationFileError(
                     "Error: File already exists at " + abs_path
                 )
-            os.system("_OPTIC_COMPLETE=zsh_source optic > ~/.optic/.optic-complete.zsh")
+            os.system(  # noqa: S605, S607
+                "_OPTIC_COMPLETE=zsh_source optic > ~/.optic/.optic-complete.zsh"
+            )
             print("Shell completion script created at", abs_path)
             abs_path = os.path.expanduser("~/.zshrc")
             if not os.path.exists(abs_path):
@@ -173,7 +175,7 @@ def setup_shell_completion(shell_env) -> None:
                 raise OpticConfigurationFileError(
                     "Error: File already exists at " + abs_path
                 )
-            os.system(
+            os.system(  # noqa: S605, S607
                 "_OPTIC_COMPLETE=bash_source optic > ~/.optic/.optic-complete.bash"
             )
             print("Shell completion script created at", abs_path)
