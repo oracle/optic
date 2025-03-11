@@ -462,3 +462,21 @@ cluster_info_response = optic.get_alias_info(cluster_generator)
 print("ALIAS INFORMATION")
 print(json.dumps(cluster_info_response, indent=3))
 ```
+
+
+## Contributing
+
+This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
+
+
+## Security
+
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
+
+## License
+
+Copyright (c) [year,] year Oracle and/or its affiliates.
+Copyright (c) 2024-2025 Oracle and/or its affiliates.
+
+Released under the Universal Permissive License v1.0 as shown at
+<https://oss.oracle.com/licenses/upl/>.
