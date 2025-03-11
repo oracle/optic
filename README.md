@@ -76,7 +76,7 @@ in [Settings](#settings-file-setup) and [CLI Usage](#cli-usage))
 ```yaml
 clusters:
   cluster_1:
-    url: https://testurl.com:46
+    url: https://testurl.com:9100
     username: my_username1
     password: my_password
     verify_ssl: true
@@ -85,11 +85,11 @@ clusters:
     username: my_username2
     password: '****'
   my_cluster:
-    url: https://onlineopensearchcluster.com:634
+    url: https://onlineopensearchcluster.com:9300
     username: my_username3
     password: '****'
   cluster_3:
-    url: https://anotherurl.com:82
+    url: https://anotherurl.com:9400
     username: my_username4
     password: '****'
 groups:
@@ -176,9 +176,7 @@ source env/bin/activate
 ```
 
 ### Clone Repository
-* **If you do not wish to locally download OPTIC source code, this step can be skipped**
-* Navigate to a directory where you would like to have the OPTIC repository using ```cd <directory-path>```
-* Clone the following repo: [https://alm.oraclecorp.com/oci/#projects/opensearch/scm/optic.git/tree?revision=main](https://alm.oraclecorp.com/oci/#projects/opensearch/scm/optic.git/tree?revision=main)
+* Clone this repo
 * Enter the optic directory that was just created using ```cd optic```
 
 ### Install Project Dependencies
@@ -188,14 +186,8 @@ pip install --upgrade pip
 ```
 * If you wish to use OPTIC as a user, follow the instructions directly below.  If you wish to develop OPTIC, follow the
 Developer Instructions
-#### User Instructions
-* If you did not locally clone the repository, you may install using one of:
-```bash
-pip install git+<git-repo-URL>
 
-# Example
-pip install git+https://alm.oraclecorp.com/oci/s/oci_opensearch_94656/scm/optic.git
-```
+#### User Instructions
 * This command will install the project dependencies from a local repository in the current working directory and allow use of the command line tools.
 ```bash
 pip install .
