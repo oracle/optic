@@ -1,6 +1,6 @@
 # ** OPTIC
 # **
-# ** Copyright (c) 2024 Oracle Corporation
+# ** Copyright (c) 2024-2025 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
 # ** as shown at https://oss.oracle.com/licenses/upl/
 
@@ -97,7 +97,7 @@ def init(cluster_config_setup, settings_setup, shell_setup):
 
 
 # BEGIN: Cluster Tool Domain
-@cli.group(help="cluster: Tool domain containing tools related to OpenSearch clusters")
+@cli.group(help="cluster: actions related to OpenSearch clusters")
 @click.pass_context
 def cluster(ctx):
     ctx.ensure_object(dict)
@@ -111,35 +111,32 @@ def cluster(ctx):
 
 # BEGIN: Info Tool
 @cluster.command()
+
 @click.option(
     "-c",
-    "--clusters",
+    "--cluster",
+    "--group",
     multiple=True,
     default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. "
 )
 @click.option(
     "--cluster-config",
     cls=default_from_settings("default_cluster_config_file_path"),
-    help="specify a non-default configuration file path "
-    "(default is default_cluster_config_file_path field in settings yaml file",
+    help="override configuration file path set in settings YAML file.",
 )
 @click.option(
     "--byte-type",
     cls=default_from_settings("default_cluster_info_byte_type"),
     type=click.Choice(["mb", "gb"], case_sensitive=False),
-    help="specify the mb or gb type for storage calculation "
-    "(default is default_cluster_info_byte_type in settings yaml file)",
+    help="override storage increment calculation set in settings YAML file",
 )
 @click.option(
     "--no-color",
     is_flag=True,
     cls=default_from_settings("disable_terminal_color"),
-    help="disable terminal color output (default is disable_terminal_color"
-    " in settings yaml file)",
+    help="disable terminal color output",
 )
 @click.option(
     "--storage-percent-thresholds",
@@ -149,13 +146,14 @@ def cluster(ctx):
     "**THIS SHOULD BE DONE UNDER THE storage_percent_thresholds "
     "FIELD IN THE SETTINGS YAML FILE, NOT ON CL**",
 )
+
 @click.pass_context
 def info(
-    ctx, clusters, cluster_config, byte_type, no_color, storage_percent_thresholds
+    ctx, cluster, cluster_config, byte_type, no_color, storage_percent_thresholds
 ):
     """Prints status of all clusters in configuration file"""
     try:
-        desired_clusters = list(clusters)
+        desired_clusters = list(cluster)
         desired_cluster_properties = {"byte_type": byte_type}
         config_info = ClusterConfig(
             yaml_load(cluster_config), desired_clusters, desired_cluster_properties
@@ -172,7 +170,7 @@ def info(
 
 
 # BEGIN: Index Tool Domain
-@cli.group(help="index: Tool domain containing tools related to OpenSearch indices")
+@cli.group(help="actions related to OpenSearch indices")
 @click.pass_context
 def index(ctx):
     ctx.ensure_object(dict)
@@ -188,13 +186,17 @@ def index(ctx):
 @index.command()
 @click.option(
     "-c",
-    "--clusters",
+    "--cluster",
+    "--group",
     multiple=True,
     default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. "
+)
+@click.option(
+    "--cluster-config",
+    cls=default_from_settings("default_cluster_config_file_path"),
+    help="override configuration file path set in settings YAML file.",
 )
 @click.option(
     "-p",
@@ -210,31 +212,25 @@ def index(ctx):
     default=None,
     help="filter to only display indices that are targets of write aliases",
 )
-@click.option(
-    "--cluster-config",
-    cls=default_from_settings("default_cluster_config_file_path"),
-    help="specify a non-default configuration file path "
-    "(default is default_cluster_config_file_path field in settings yaml file)",
-)
 @click.option("--min-age", type=int, help="minimum age of index")
 @click.option("--max-age", type=int, help="maximum age of index")
 @click.option(
     "--min-index-size",
-    help="filter by minimum size of index (accepts kb, mb, gb, tb) Eg: 1mb",
+    help="filter by minimum size of index (accepts kb, mb, gb, tb) Example: 1mb",
 )
 @click.option(
     "--max-index-size",
-    help="filter by maximum size of index (accepts kb, mb, gb, tb) Eg: 10gb",
+    help="filter by maximum size of index (accepts kb, mb, gb, tb) Example: 10gb",
 )
 @click.option(
     "--min-shard-size",
     help="filter by minimum average size of index primary shards "
-    "(accepts kb, mb, gb, tb) Eg: 1mb",
+    "(accepts kb, mb, gb, tb) Example: 1mb",
 )
 @click.option(
     "--max-shard-size",
     help="filter by maximum average size of index primary shards "
-    "(accepts kb, mb, gb, tb) Eg: 10gb",
+    "(accepts kb, mb, gb, tb) Example: 10gb",
 )
 @click.option("--min-doc-count", type=int, help="filter by minimum number of documents")
 @click.option("--max-doc-count", type=int, help="filter by maximum number of documents")
@@ -245,7 +241,7 @@ def index(ctx):
     default=(),
     type=str,
     help="specify the index types to exclude.  "
-    "Supports multiple exclusions Eg: -t ISM -t SYSTEM",
+    "Supports multiple exclusions Example: -t ISM -t SYSTEM",
 )
 @click.option(
     "-s",
@@ -287,7 +283,7 @@ def index(ctx):
 def info(
     ctx,
     cluster_config,
-    clusters,
+    cluster,
     search_pattern,
     write_alias_only,
     min_age,
@@ -318,7 +314,7 @@ def info(
             "type_filter": list(type_filter),
         }
         sort_by = list(sort_by)
-        desired_clusters = list(clusters)
+        desired_clusters = list(cluster)
         desired_cluster_properties = {
             "index_search_pattern": search_pattern,
             "index_types_dict": index_types,
@@ -338,7 +334,7 @@ def info(
 
 
 # BEGIN: Alias Tool Domain
-@cli.group(help="alias: Tool domain containing tools related to OpenSearch aliases")
+@cli.group(help="alias: actions related to OpenSearch aliases")
 @click.pass_context
 def alias(ctx):
     ctx.ensure_object(dict)
@@ -354,19 +350,17 @@ def alias(ctx):
 @alias.command()
 @click.option(
     "-c",
-    "--clusters",
+    "--cluster",
+    "--group",
     multiple=True,
     default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. "
 )
 @click.option(
     "--cluster-config",
     cls=default_from_settings("default_cluster_config_file_path"),
-    help="specify a non-default configuration file path "
-    "(default is default_cluster_config_file_path field in settings yaml file",
+    help="override configuration file path set in settings YAML file.",
 )
 @click.option(
     "-p",
@@ -383,10 +377,10 @@ def alias(ctx):
     " in settings yaml file)",
 )
 @click.pass_context
-def info(ctx, clusters, cluster_config, search_pattern, no_color):
+def info(ctx, cluster, cluster_config, search_pattern, no_color):
     """Prints information about aliases in use"""
     try:
-        desired_clusters = list(clusters)
+        desired_clusters = list(cluster)
         desired_cluster_properties = {
             "index_search_pattern": search_pattern,
         }
