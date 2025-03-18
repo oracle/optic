@@ -8,7 +8,7 @@ on:
 
 jobs:
   code_quality:
-    name: Linting and Unit Tests
+    name: Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -34,5 +34,86 @@ jobs:
       - name: Run Flake8 (Linter)
         run: flake8 .
 
+
+  tests:
+    needs: code_quality
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+
       - name: Run Unit Tests
         run: pytest --cov=src --cov-report=term
+
+
+  version_validation:
+    needs: tests
+    name: Version Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # This will fetch all tags
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install toml
+          pip install packaging
+
+      - name: Extract versions
+        id: get_versions
+        run: |
+          # Get Latest Git Tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 --match='v*.*')
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+
+          # Extract version from CHANGELOG.md (assumes the first heading is the latest version)
+          CHANGELOG_VERSION=$(grep -oP '(?<=#\s)\d+\.\d+\.\d+' CHANGELOG.md | head -n 1)
+          echo "CHANGELOG_VERSION=$CHANGELOG_VERSION" >> $GITHUB_ENV
+
+          # Extract version from pyproject.toml
+          PYPROJECT_VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          echo "PYPROJECT_VERSION=$PYPROJECT_VERSION" >> $GITHUB_ENV
+
+      - name: Compare Versions1
+        run: |
+          python -c "
+          import packaging.version
+          latest_tag = '${LATEST_TAG}'
+          changelog_version='${CHANGELOG_VERSION}'
+          pyproject_version = '${PYPROJECT_VERSION}'
+
+          print(f'Latest Git Tag: {latest_tag}')
+          print(f'CHANGELOG Version: {changelog_version}')
+          print(f'pyproject.toml Version: {pyproject_version}')
+
+          if packaging.version.Version(changelog_version) > packaging.version.Version(latest_tag):
+              print('CHANGELOG Version check passed ✅')
+          else:
+              raise ValueError(f'❌ Error: CHANGELOG version: {changelog_version} is not greater than Latest tag: {latest_tag}')
+
+          if packaging.version.Version(pyproject_version) > packaging.version.Version(latest_tag):
+              print('pyproject.toml Version check passed ✅')
+          else:
+              raise ValueError(f'❌ Error: pyproject version: {pyproject_version} is not greater than Latest tag: {latest_tag}')
+          "
