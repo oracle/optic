@@ -1,0 +1,44 @@
+name: version_validation
+
+on:
+  push:  # Runs on any push to any branch
+  pull_request: # Runs on PRs to the main branch
+    branches:
+      - main
+
+jobs:
+  lint-format:
+    name: Version Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+          pip install toml
+
+      - name: Extract versions
+        id: get_versions
+        run: |
+          # Extract version from pyproject.toml
+          PYPROJECT_VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          echo "PYPROJECT_VERSION=$PYPROJECT_VERSION" >> $GITHUB_ENV
+
+          # Extract version from CHANGELOG.md (assumes the first heading is the latest version)
+          CHANGELOG_VERSION=$(grep -oP '(?<=##\s)v?\d+\.\d+\.\d+' CHANGELOG.md | head -1)
+          echo "CHANGELOG_VERSION=$CHANGELOG_VERSION" >> $GITHUB_ENV
+
+      - name: Get the latest Git tag
+        id: get_latest_tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 || echo "0.0.0")
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
