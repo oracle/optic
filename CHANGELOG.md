@@ -5,6 +5,9 @@ Copyright (c) 2024-2025, Oracle and/or its affiliates. All rights reserved.
 All notable changes to the OPTIC project will be documented in
 this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+# 1.2.1
+* fix: 🩹do not output report header for empty cluster list
+
 # 1.2.0
 * chore: 👷 update code quality action
 * chore: 🔥 remove version validation single action
