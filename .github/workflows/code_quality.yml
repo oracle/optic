@@ -1,0 +1,38 @@
+name: code_linter
+
+on:
+  push:  # Runs on any push to any branch
+  pull_request: # Runs on PRs to the main branch
+    branches:
+      - main
+
+jobs:
+  lint-format:
+    name: Check Formatting and Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+
+      - name: Run Black (Formatter)
+        run: black --check .
+
+      - name: Run iSort
+        run: isort .
+
+      - name: Run Flake8 (Linter)
+        run: flake8 .
+
+      - name: Run Unit Tests
+        run: pytest --cov=src --cov-report=term
