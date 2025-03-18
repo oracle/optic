@@ -1,4 +1,4 @@
-name: code_linter
+name: code_quality
 
 on:
   push:  # Runs on any push to any branch
@@ -7,8 +7,8 @@ on:
       - main
 
 jobs:
-  lint-format:
-    name: Check Formatting and Linting
+  code_quality:
+    name: Linting and Unit Tests
     runs-on: ubuntu-latest
 
     steps:
