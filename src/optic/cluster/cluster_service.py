@@ -17,32 +17,57 @@ def get_cluster_info(config_info) -> list:
     :return: list of dictionaries containing cluster information
     :rtype: list
     """
-    clusters_dicts = []
+    cluster_info = []
     for cluster in config_info.selected_cluster_objects:
         usage = cluster.storage_percent
         status = cluster.health.status
-        clusters_dicts.append(
+        cluster_info.append(
             {"name": cluster.custom_name, "status": status, "usage": usage}
         )
-    return clusters_dicts
+    return cluster_info
 
 
-def print_cluster_info(cluster_dicts, no_color, storage_percent_thresholds) -> None:
+def print_cluster_info(cluster_info, no_color, storage_percent_thresholds) -> None:
     """
-    Prints Cluster Information
+    Prints cluster information
 
-    :param list cluster_dicts: list of dictionaries of cluster information
-    :param bool no_color: whether colored output or not
+    :param list cluster_info: list of dictionaries containing cluster information
+    :param bool no_color: disable colored output if value is true
     :param dict storage_percent_thresholds: dict of storage percent thresholds
     :return: None
     :rtype: None
     """
+    table = build_cluster_info_table(cluster_info, no_color, storage_percent_thresholds)
+
+    # only display the table if at least one valid cluster was found
+    if table:
+        print(table.table)
+    else:
+        print("Unable to display cluster information. No valid clusters were selected.")
+
+
+def build_cluster_info_table(
+    cluster_info, no_color, storage_percent_thresholds
+) -> AsciiTable:
+    """
+    Creates an AsciiTable object populated with cluster information
+
+    :param list cluster_info: list of dictionaries containing cluster information
+    :param bool no_color: disable colored output if value is true
+    :param dict storage_percent_thresholds: dict of storage percent thresholds
+    :return: formatted table of cluster information
+    :rtype: AsciiTable
+    """
+
+    if not cluster_info:
+        return None
+
     optic_color = OpticColor()
     if no_color:
         optic_color.disable_colors()
 
     print_data = [["Cluster", "Status", "Storage Use (%)"]]
-    for stats in cluster_dicts:
+    for stats in cluster_info:
         status = stats["status"]
         match status:
             case "red":
@@ -64,4 +89,4 @@ def print_cluster_info(cluster_dicts, no_color, storage_percent_thresholds) -> N
 
     table = AsciiTable(print_data)
     table.title = "Cluster Info"
-    print(table.table)
+    return table

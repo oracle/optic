@@ -34,10 +34,15 @@ def yaml_load(file_path) -> dict:
 
 
 class ClusterConfig:
-    def __init__(self, cluster_data, selected_clusters, selected_cluster_properties):
-        self._data = cluster_data
-        self._selected_clusters = selected_clusters
-        self._selected_cluster_properties = selected_cluster_properties
+    def __init__(
+        self,
+        cluster_data=None,
+        selected_clusters=None,
+        selected_cluster_properties=None,
+    ):
+        self._data = cluster_data or {}
+        self._selected_clusters = selected_clusters or []
+        self._selected_cluster_properties = selected_cluster_properties or {}
         self._groups = None
         self._clusters = None
         self._selected_cluster_objects = None

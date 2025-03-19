@@ -1,5 +1,10 @@
+import os
+
+import pytest
+import yaml
+
 from optic.cluster.cluster import Cluster, ClusterHealth
-from optic.cluster.cluster_service import get_cluster_info
+from optic.cluster.cluster_service import build_cluster_info_table, get_cluster_info
 from optic.common.config import ClusterConfig
 
 
@@ -60,20 +65,48 @@ class TestClusterClass:
         assert test_cluster._calculate_storage_percent(sim_disk_response) == 34
 
 
+@pytest.fixture
+def optic_settings(request) -> dict:
+    test_dir = os.path.dirname(request.module.__file__)
+    fixture_optic_settings_file = os.path.join(
+        test_dir, "fixtures", "optic-settings.yaml"
+    )
+    with open(fixture_optic_settings_file, "r") as f:
+        return yaml.safe_load(f)
+
+
+@pytest.fixture
+def cluster_config(request) -> dict:
+    test_dir = os.path.dirname(request.module.__file__)
+    fixture_optic_settings_file = os.path.join(
+        test_dir, "fixtures", "cluster-config.yaml"
+    )
+    with open(fixture_optic_settings_file, "r") as f:
+        return yaml.safe_load(f)
+
+
+@pytest.fixture
+def selected_clusters():
+    cluster_1 = Cluster(custom_name="test_cluster_1")
+    cluster_1._storage_percent = 17
+    cluster_1._health = ClusterHealth(**{"status": "green"})
+    cluster_2 = Cluster(custom_name="test_cluster_2")
+    cluster_2._storage_percent = 74
+    cluster_2._health = ClusterHealth(**{"status": "yellow"})
+    cluster_3 = Cluster(custom_name="test_cluster_3")
+    cluster_3._storage_percent = 59
+    cluster_3._health = ClusterHealth(**{"status": "yellow"})
+    return [cluster_1, cluster_2, cluster_3]
+
+
+@pytest.fixture
+def config_info(cluster_config):
+    return ClusterConfig(cluster_config)
+
+
 class TestClusterService:
-    def test_get_cluster_info(self):
-        config_info = ClusterConfig({}, [], {})
-        test_cluster_1 = Cluster(custom_name="test_cluster_1")
-        test_cluster_1._storage_percent = 17
-        test_cluster_1._health = ClusterHealth(**{"status": "green"})
-        test_cluster_2 = Cluster(custom_name="test_cluster_2")
-        test_cluster_2._storage_percent = 74
-        test_cluster_2._health = ClusterHealth(**{"status": "yellow"})
-        test_cluster_3 = Cluster(custom_name="test_cluster_3")
-        test_cluster_3._storage_percent = 59
-        test_cluster_3._health = ClusterHealth(**{"status": "yellow"})
-        cluster_list = [test_cluster_1, test_cluster_2, test_cluster_3]
-        config_info._selected_cluster_objects = cluster_list
+    def test_get_cluster_info(self, config_info, selected_clusters):
+        config_info._selected_cluster_objects = selected_clusters
         cluster_dict = get_cluster_info(config_info)
         assert cluster_dict[0]["name"] == "test_cluster_1"
         assert cluster_dict[1]["name"] == "test_cluster_2"
@@ -85,6 +118,29 @@ class TestClusterService:
         assert cluster_dict[1]["usage"] == 74
         assert cluster_dict[2]["usage"] == 59
 
-    def test_print_cluster_info(self):
-        # TODO
-        assert 1 == 1
+    def test_build_cluster_info_table_valid_cluster(
+        self, config_info, selected_clusters, optic_settings
+    ):
+        os = optic_settings
+        config_info._selected_cluster_objects = selected_clusters
+        cluster_info = get_cluster_info(config_info)
+        table = build_cluster_info_table(
+            cluster_info, os["disable_terminal_color"], os["storage_percent_thresholds"]
+        )
+        assert table.table is not None
+        assert all(cluster.custom_name in table.table for cluster in selected_clusters)
+
+    def test_build_cluster_info_table_invalid_cluster(
+        self, cluster_config, optic_settings
+    ):
+        config_info = ClusterConfig(cluster_config, ["cluster_4"])
+        os = optic_settings
+        cluster_info = get_cluster_info(config_info)
+        assert len(config_info.selected_cluster_objects) == 0
+        assert (
+            build_cluster_info_table(
+                cluster_info,
+                os["disable_terminal_color"],
+                os["storage_percent_thresholds"],
+            )
+        ) is None
