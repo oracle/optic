@@ -31,7 +31,7 @@ def print_cluster_info(cluster_info, no_color, storage_percent_thresholds) -> No
     """
     Prints cluster information
 
-    :param list cluster_dicts: list of dictionaries of cluster information
+    :param list cluster_info: list of dictionaries containing cluster information
     :param bool no_color: disable colored output if value is true
     :param dict storage_percent_thresholds: dict of storage percent thresholds
     :return: None
@@ -52,7 +52,7 @@ def build_cluster_info_table(
     """
     Creates an AsciiTable object populated with cluster information
 
-    :param list cluster_dicts: list of dictionaries of cluster information
+    :param list cluster_info: list of dictionaries containing cluster information
     :param bool no_color: disable colored output if value is true
     :param dict storage_percent_thresholds: dict of storage percent thresholds
     :return: formatted table of cluster information
