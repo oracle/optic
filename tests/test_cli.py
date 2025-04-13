@@ -16,7 +16,7 @@ class TestCli:
         assert result.exit_code == 0
         assert "Usage:" in result.output
 
-    def test_cluster_command_fail(self, mocker, runner, optic_settings_file_path):
+    def test_cluster_info_command_fail(self, mocker, runner, optic_settings_file_path):
         # mock 'exit' to prevent the test from exiting
         mock_exit = mocker.patch("builtins.exit", side_effect=SystemExit(1))
 
@@ -34,7 +34,7 @@ class TestCli:
         )
         mock_exit.assert_called_once_with(1)
 
-    def test_cluster_command_success(
+    def test_cluster_info_command_success(
         self, mocker, runner, optic_settings_file_path, optic_settings, cluster_config
     ):
         mock_cluster_config_class = mocker.patch("optic.cli.ClusterConfig")
