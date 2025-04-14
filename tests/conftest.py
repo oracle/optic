@@ -6,11 +6,6 @@ import yaml
 
 
 @pytest.fixture
-def ctx_obj(optic_settings_file_path):
-    yield {"settings_file_path": optic_settings_file_path}
-
-
-@pytest.fixture
 def cluster_config_file_path():
     temp_dir = tempfile.mkdtemp()
     settings_file_path = f"{temp_dir}/cluster-config.yaml"
