@@ -1,7 +1,4 @@
-import os
-
 import pytest
-import yaml
 
 from optic.cluster.cluster import Cluster, ClusterHealth
 from optic.cluster.cluster_service import build_cluster_info_table, get_cluster_info
@@ -63,26 +60,6 @@ class TestClusterClass:
             {"disk.used": "22", "disk.total": 334},
         ]
         assert test_cluster._calculate_storage_percent(sim_disk_response) == 34
-
-
-@pytest.fixture
-def optic_settings(request) -> dict:
-    test_dir = os.path.dirname(request.module.__file__)
-    fixture_optic_settings_file = os.path.join(
-        test_dir, "fixtures", "optic-settings.yaml"
-    )
-    with open(fixture_optic_settings_file, "r") as f:
-        return yaml.safe_load(f)
-
-
-@pytest.fixture
-def cluster_config(request) -> dict:
-    test_dir = os.path.dirname(request.module.__file__)
-    fixture_optic_settings_file = os.path.join(
-        test_dir, "fixtures", "cluster-config.yaml"
-    )
-    with open(fixture_optic_settings_file, "r") as f:
-        return yaml.safe_load(f)
 
 
 @pytest.fixture
