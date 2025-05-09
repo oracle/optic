@@ -6,8 +6,16 @@ import yaml
 
 
 @pytest.fixture
-def cluster_config_file_path():
+def temp_dir():
     temp_dir = tempfile.mkdtemp()
+    yield temp_dir
+
+    # Clean up the temporary directory and its contents
+    shutil.rmtree(temp_dir)
+
+
+@pytest.fixture
+def cluster_config_file_path(temp_dir):
     settings_file_path = f"{temp_dir}/cluster-config.yaml"
 
     with open(settings_file_path, "w") as f:
@@ -49,13 +57,9 @@ def cluster_config_file_path():
 
     yield settings_file_path
 
-    # Clean up the temporary directory and its contents
-    shutil.rmtree(temp_dir)
-
 
 @pytest.fixture
-def optic_settings_file_path(cluster_config_file_path):
-    temp_dir = tempfile.mkdtemp()
+def optic_settings_file_path(temp_dir, cluster_config_file_path):
     settings_file_path = f"{temp_dir}/optic-settings.yaml"
 
     with open(settings_file_path, "w") as f:
@@ -79,9 +83,6 @@ def optic_settings_file_path(cluster_config_file_path):
         )
 
     yield settings_file_path
-
-    # Clean up the temporary directory and its contents
-    shutil.rmtree(temp_dir)
 
 
 @pytest.fixture
