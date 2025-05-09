@@ -6,10 +6,18 @@
 
 
 class OpticColor:
-    RED = "\033[91m"
-    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
+    BOLD = "\033[1m"
+    CYAN = "\033[96m"
     GREEN = "\033[92m"
+    RED = "\033[91m"
     STOP = "\033[0m"
+    YELLOW = "\033[93m"
+
+    ERROR = RED + BOLD
+    OK_CYAN = CYAN + BOLD
+    OK_GREEN = GREEN + BOLD
+    WARNING = YELLOW + BOLD
 
     def disable_colors(self) -> None:
         """
@@ -18,6 +26,10 @@ class OpticColor:
         :return: None
         :rtype: None
         """
-        self.RED = ""
-        self.YELLOW = ""
-        self.GREEN = ""
+        for attr, value in self.__dict__.items():
+            if (
+                isinstance(value, str)
+                and value.startswith("\033[")
+                and value.endswith("m")
+            ):
+                setattr(self, attr, "")

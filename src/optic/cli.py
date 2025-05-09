@@ -1,6 +1,6 @@
 # ** OPTIC
 # **
-# ** Copyright (c) 2024 Oracle Corporation
+# ** Copyright (c) 2024-2025 Oracle Corporation
 # ** Licensed under the Universal Permissive License v 1.0
 # ** as shown at https://oss.oracle.com/licenses/upl/
 
@@ -11,8 +11,8 @@ from optic.alias.alias_service import get_alias_info, print_alias_info
 from optic.cluster.cluster_service import get_cluster_info, print_cluster_info
 from optic.common.config import ClusterConfig, Settings, yaml_load
 from optic.common.exceptions import OpticError
-from optic.common.initialize import initialize_optic
 from optic.index.index_service import get_index_info, print_index_info
+from optic.initialize.initialize_service import initialize_optic
 
 
 def default_from_settings(setting_name) -> type[Option] | None:
@@ -56,44 +56,18 @@ def cli(ctx, settings):
 # END: OPTIC Entry Point
 
 
-# BEGIN: Special init command (No tool domain)
+# BEGIN: initialize command (No tool domain)
 @cli.command()
-@click.option(
-    "--cluster-config-setup",
-    prompt="Would you like to create a cluster configuration  "
-    "file at ~/.optic/cluster-config.yaml?",
-    type=click.Choice(["Y", "n"], case_sensitive=False),
-    default="Y",
-    help="Prompts user for permission to create cluster config file",
-)
-@click.option(
-    "--settings-setup",
-    prompt="Would you like to set up a settings file at ~/.optic/optic-settings.yaml?",
-    type=click.Choice(["Y", "n"], case_sensitive=False),
-    default="Y",
-    help="Prompts user for permission to create cluster config file",
-)
-@click.option(
-    "--shell-setup",
-    prompt="Would you like to set up shell completion?  NOTE: This will involve  "
-    "appending a command to source it to your shell configuration file",
-    type=click.Choice(["Y", "n"], case_sensitive=False),
-    default="Y",
-    help="Prompts user for permission to setup shell completion",
-)
-def init(cluster_config_setup, settings_setup, shell_setup):
+def init():
     """Initialize OPTIC settings,  configuration, and shell completion"""
     try:
-        config_bool = cluster_config_setup.lower() == "y"
-        settings_bool = settings_setup.lower() == "y"
-        shell_bool = shell_setup.lower() == "y"
-        initialize_optic(config_bool, settings_bool, shell_bool)
+        initialize_optic()
     except OpticError as e:
         print(e)
         exit(1)
 
 
-# END: Special init command (No tool domain)
+# END: initialize command (No tool domain)
 
 
 # BEGIN: Cluster Tool Domain

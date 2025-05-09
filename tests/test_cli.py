@@ -181,48 +181,11 @@ class TestCli:
         mock_cluster_config_class.assert_called_once()
         mock_get_index_info.assert_called_once()
 
-    def test_init_command_fail(self, mocker, runner, mock_exit):
-        runner.invoke(
-            init,
-            [
-                "--cluster-config-setup",
-                "Y",
-                "--settings-setup",
-                "Y",
-                "--shell-setup",
-                "Y",
-            ],
-        )
-        mock_exit.assert_called_once_with(1)
-
     def test_init_command_success(self, mocker, runner):
         mock_initialize_optic = mocker.patch("optic.cli.initialize_optic")
 
-        runner.invoke(
-            init,
-            [
-                "--cluster-config-setup",
-                "Y",
-                "--settings-setup",
-                "Y",
-                "--shell-setup",
-                "Y",
-            ],
-        )
-        mock_initialize_optic.assert_called_with(True, True, True)
-
-        runner.invoke(
-            init,
-            [
-                "--cluster-config-setup",
-                "Y",
-                "--settings-setup",
-                "Y",
-                "--shell-setup",
-                "N",
-            ],
-        )
-        mock_initialize_optic.assert_called_with(True, True, False)
+        runner.invoke(init)
+        mock_initialize_optic.assert_called_once()
 
     def test_option_default_from_settings_absent(self, ctx_obj):
         context = click.Context(cli.commands["alias"].commands["info"], obj=ctx_obj)
