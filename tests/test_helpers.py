@@ -1,24 +1,49 @@
+import pytest
+
 from optic.common.helpers import prompt_question
 
 
 class TestHelpers:
-    def test_prompt_question(self, mocker):
-        # Test 'y' input
-        mocker.patch("builtins.input", return_value="y")
-        assert prompt_question("Test question") is True
+    @pytest.mark.parametrize(
+        "keyboard_input, expected_result",
+        [
+            ("y", True),
+            ("yes", True),
+            (" yes       ", True),
+            ("YES", True),
+            ("    YES", True),
+            ("YES        ", True),
+            ("Yes", True),
+            ("yEs", True),
+            ("n", False),
+            ("no", False),
+            ("no         ", False),
+            ("N", False),
+            ("N   ", False),
+            ("NO", False),
+            ("       NO", False),
+            ("nO", False),
+            ("", False),
+            ("       ", False),
+        ],
+    )
+    def test_prompt_question(self, mocker, keyboard_input, expected_result):
+        mocker.patch("builtins.input", return_value=keyboard_input)
+        assert prompt_question("Test question True") is expected_result
 
-        # Test 'yes' input
-        mocker.patch("builtins.input", return_value="yes")
-        assert prompt_question("Test question") is True
-
-        # Test 'n' input
-        mocker.patch("builtins.input", return_value="n")
-        assert prompt_question("Test question") is False
-
-        # Test 'no' input
-        mocker.patch("builtins.input", return_value="no")
-        assert prompt_question("Test question") is False
-
-        # Test invalid input
-        mocker.patch("builtins.input", side_effect=["invalid", "y"])
-        assert prompt_question("Test question") is True
+    @pytest.mark.parametrize(
+        "keyboard_input, default_response, expected_result",
+        [
+            ("", True, True),
+            ("      ", True, True),
+            ("", False, False),
+            ("      ", False, False),
+        ],
+    )
+    def test_prompt_question_default_value(
+        self, mocker, keyboard_input, default_response, expected_result
+    ):
+        mocker.patch("builtins.input", return_value=keyboard_input)
+        assert (
+            prompt_question("Test question True", default_response) is expected_result
+        )
