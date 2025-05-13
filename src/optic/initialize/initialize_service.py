@@ -71,12 +71,12 @@ OPTIC_COLOR = OpticColor()
 
 def initialize_optic() -> None:
     """
-    Sets up OPTIC's necessary user directories and files
+    Initializes the Optic configuration by setting up the cluster configuration,
+    default settings, and shell completion.
 
     :return: None
     :rtype: None
     """
-
     setup_cluster_config()
     setup_settings()
     setup_shell_completion()
@@ -152,6 +152,19 @@ def setup_settings() -> None:
         )
 
 
+def get_shell_configuration_file(extension):
+    """
+    Returns the path to a shell configuration file based on the given extension.
+
+    Args:
+    extension (str): The shell type (e.g., "bash", "zsh").
+
+    Returns:
+    str: The path to the shell configuration file.
+    """
+    return os.path.expanduser(f"~/.{extension}rc")
+
+
 def get_shell_env() -> str:
     """
     Gets shell type from environment variable
@@ -185,8 +198,18 @@ def setup_shell_completion() -> None:
 
 
 def configure_shell_to_use_completion(extension) -> None:
-    # Shell configuration file (.bashrc or .zshrc)
-    shell_configuration_file = f"~/.{extension}rc"
+    """
+    Configures the shell to use completion by creating a shell completion script
+    and appending it to the shell configuration file.
+
+    The script is created and appended to the shell configuration file (.bashrc or .zshrc).
+
+    Args:
+        extension (str): The type of shell (e.g., "bash", "zsh").
+
+    Returns:
+        None
+    """
 
     # Shell complete file path
     shell_complete_path = os.path.expanduser(
@@ -194,7 +217,7 @@ def configure_shell_to_use_completion(extension) -> None:
     )
 
     # Prompts user for permission to setup shell completion
-    # in case shell complete file does not exist
+    # in case a shell complete file does not exist
     if not validate_file_exists(shell_complete_path):
         create_shell_completion = prompt_question(
             f"Would you like to set up shell completion?\n{OPTIC_COLOR.WARNING}NOTE:{OPTIC_COLOR.STOP}"
@@ -213,16 +236,18 @@ def configure_shell_to_use_completion(extension) -> None:
                 f"Shell completion script created: {OPTIC_COLOR.OK_CYAN}{shell_complete_path}{OPTIC_COLOR.STOP}"
             )
 
+            # Shell configuration file (.bashrc or .zshrc)
+            shell_configuration_file = get_shell_configuration_file(extension)
+
             # Validate that shell configuration file exists (.bashrc or .zshrc)
             # and create it if it doesn't exist
-            shell_complete_path = os.path.expanduser(shell_configuration_file)
-            if not os.path.exists(shell_complete_path):
-                print(f"{shell_configuration_file} not found at", shell_complete_path)
+            if not os.path.exists(shell_configuration_file):
+                print(f"File: {shell_configuration_file} not found at")
                 print(f"Creating {shell_configuration_file}")
 
             # Open shell complete file path and append
             # shell completion script sourcing
-            f = open(shell_complete_path, "a")
+            f = open(shell_configuration_file, "a")
             f.write("\n")
 
             if extension == "zsh":

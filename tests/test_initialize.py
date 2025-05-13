@@ -31,6 +31,15 @@ def mock_shell_complete_file_path_zsh(temp_dir):
     return f"{temp_dir}/.optic-complete.zsh"
 
 
+@pytest.fixture
+def mock_shell_configuration_file_path(temp_dir):
+    mock_shell_configuration_file_path = f"{temp_dir}/.zshrc"
+    with open(mock_shell_configuration_file_path, "w") as f:
+        f.write("#Mocked shell configuration file")
+
+    return mock_shell_configuration_file_path
+
+
 class TestInitialize:
 
     def test_initialize_optic(self, mocker):
@@ -161,14 +170,20 @@ class TestInitialize:
 
     @pytest.mark.parametrize("extension", ["bash", "zsh"])
     def test_configure_shell_to_use_completion_create(
-        self, mocker, temp_dir, extension
+        self, mocker, mock_shell_configuration_file_path, temp_dir, extension
     ):
         mock_dir = f"{temp_dir}/optic"
         mocker.patch.object(initialize_service, "CONFIG_BASE_DIR", mock_dir)
 
-        # Mock "Y" input
+        # Mock "Yes" (True) input
         mocker.patch(
             "optic.initialize.initialize_service.prompt_question", return_value=True
+        )
+
+        mocker.patch.object(
+            initialize_service,
+            "get_shell_configuration_file",
+            return_value=mock_shell_configuration_file_path,
         )
 
         # Test when shell completion file exists
