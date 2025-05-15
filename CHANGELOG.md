@@ -5,6 +5,9 @@ Copyright (c) 2024-2025, Oracle and/or its affiliates. All rights reserved.
 All notable changes to the OPTIC project will be documented in
 this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+# 1.4.1
+* docs: 📝 update installation instructions
+
 # 1.4.0
 * refactor: ♻️ move optic init logic to initialize_service.py
 
