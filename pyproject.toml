@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opensearch-optic"
-version = "1.4.1"
+version = "1.4.2"
 description = "Opensearch Tools for Indices and Clusters"
 readme = "README.md"
 authors = [
@@ -26,7 +26,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"
 ]
-urls = { "Homepage" = "https://github.com/yourusername/mycli" }
+
+[project.urls]
+Homepage = "https://github.com/oracle/optic"
+Issues = "https://github.com/oracle/optic/issues"
+
 
 [project.optional-dependencies]
 dev = [
