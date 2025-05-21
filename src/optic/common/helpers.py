@@ -1,3 +1,19 @@
+from importlib.metadata import PackageNotFoundError, version
+
+
+def get_version():
+    """
+    Retrieves and returns the version of the 'opensearch-optic' package.
+
+    Returns:
+        str: The version of 'opensearch-optic' if installed, "unknown" otherwise.
+    """
+    try:
+        return version("opensearch-optic")
+    except PackageNotFoundError:
+        return "unknown"
+
+
 def prompt_question(question: str, default_response: bool = False) -> bool:
     """
     Prompts the user with a es or no question and returns their response as a boolean.

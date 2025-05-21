@@ -11,6 +11,7 @@ from optic.alias.alias_service import get_alias_info, print_alias_info
 from optic.cluster.cluster_service import get_cluster_info, print_cluster_info
 from optic.common.config import ClusterConfig, Settings, yaml_load
 from optic.common.exceptions import OpticError
+from optic.common.helpers import get_version
 from optic.index.index_service import get_index_info, print_index_info
 from optic.initialize.initialize_service import initialize_optic
 
@@ -40,6 +41,7 @@ def default_from_settings(setting_name) -> type[Option] | None:
 
 
 # BEGIN: OPTIC Entry Point
+@click.version_option(get_version())
 @click.group(help="optic: Opensearch Tools for Indices and Cluster")
 @click.option(
     "--settings",
