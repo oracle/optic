@@ -176,6 +176,41 @@ To run OPTIC with an alternate settings file path, enter:
 optic --settings-path <custom_file_path> <tool_domain> <tool_name>
 ```
 
+To find all indexes from a group of clusters called `my_group`, enter:
+```sh
+optic index info -c my_group
+```
+
+Example output:
+
+```
++Index Info---------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+| Index                         | Age | Type   | Document Count | Index Size | Shard Size | Pri | Rep | Write Alias | Cluster      |
++-------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+| lord_of_the_indexes           | 12  | ISM    | 2033895        | 293.9mb    | 146.95mb   | 2   | 1   | True        | cluster_1    |
+| game_of_clusters              | 36  | ISM    | 8862623        | 8.1gb      | 4.05gb     | 2   | 1   | True        | cluster_2    |
+| the_godfather_of_all_indexes  | 89  | ISM    | 683308950      | 19.1gb     | 9.55gb     | 2   | 1   | True        | cluster_3    |
++-------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+```
+
+
+The `index info` functionality supports pattern matching using wildcards. For instance, to find all indexes from cluster: `cluster_1` with a common prefix and displaying the results sorted by index name, you can use the following command:
+```sh
+optic index info -c cluster_1 -p "rocketship*" -s name
+```
+
+Example output:
+```
++Index Info-----------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+| Index                     | Age | Type   | Document Count | Index Size | Shard Size | Pri | Rep | Write Alias | Cluster      |
++---------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+| rocketship_communication  | 20  | ISM    | 234955         | 545.9mb    | 272.95mb   | 2   | 1   | True        | cluster_1    |
+| rocketship_navigation     | 64  | ISM    | 8862623        | 13.2gb     | 6.6gb      | 2   | 1   | True        | cluster_1    |
+| rocketship_propulsion     | 58  | ISM    | 2033895        | 420.8kb    | 210.4kb    | 2   | 1   | True        | cluster_1    |
+| rocketship_telemetry      | 80  | ISM    | 683308950      | 14.8gb     | 7.4gb      | 2   | 1   | True        | cluster_1    |
++---------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+```
+
 ## OPTIC as Library
 OPTIC is also designed to be able to be used as a library by external.  OPTIC exposes various functions and classes 
 (listed in the top level `__init__.py`) for developers to call externally.  The recommended way to call OPTIC functionality
