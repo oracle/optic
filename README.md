@@ -106,7 +106,7 @@ clusters:
     username: my_username4
     password: '****'
 groups:
-  my_group:
+  my_cluster_group:
     - cluster_1
     - cluster_2
     - cluster_3
@@ -176,21 +176,41 @@ To run OPTIC with an alternate settings file path, enter:
 optic --settings-path <custom_file_path> <tool_domain> <tool_name>
 ```
 
-To find all indexes from a group of clusters called `my_group`, enter:
+To display information about clusters from a group of clusters called `my_cluster_group`, enter:
 ```sh
-optic index info -c my_group
+optic cluster info -c my_cluster_group
 ```
 
-Example output:
+**Example output:**
 
 ```
-+Index Info---------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
-| Index                         | Age | Type   | Document Count | Index Size | Shard Size | Pri | Rep | Write Alias | Cluster      |
-+-------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
-| lord_of_the_indexes           | 12  | ISM    | 2033895        | 293.9mb    | 146.95mb   | 2   | 1   | True        | cluster_1    |
-| game_of_clusters              | 36  | ISM    | 8862623        | 8.1gb      | 4.05gb     | 2   | 1   | True        | cluster_2    |
-| the_godfather_of_all_indexes  | 89  | ISM    | 683308950      | 19.1gb     | 9.55gb     | 2   | 1   | True        | cluster_3    |
-+-------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
++Cluster Info-------------+--------+-----------------+
+| Cluster                 | Status | Storage Use (%) |
++-------------------------+--------+-----------------+
+| action-packed-cluster   | yellow | 80              |
+| behind-the-scenes       | green  | 62              |
+| cult-classics-cluster   | green  | 83              |
+| scene-by-scene-cluster  | green  | 73              |
++-------------------------+--------+-----------------+
+```
+
+
+To find all indexes from a group of clusters called `my_cluster_group`, enter:
+```sh
+optic index info -c my_cluster_group
+```
+
+**Example output:**
+
+```
++Index Info--------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+| Index                                    | Age | Type   | Document Count | Index Size | Shard Size | Pri | Rep | Write Alias | Cluster      |
++------------------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+| lord_of_the_indexes-ism-000100           | 12  | ISM    | 2033895        | 293.9mb    | 146.95mb   | 2   | 1   | True        | cluster_1    |
+| lord_of_the_indexes-ism-000101           | 12  | ISM    | 2033895        | 293.9mb    | 146.95mb   | 2   | 1   | True        | cluster_1    |
+| game_of_clusters-ism-000105              | 36  | ISM    | 8862623        | 8.1gb      | 4.05gb     | 2   | 1   | True        | cluster_2    |
+| the_godfather_of_all_indexes-ism-001972  | 89  | ISM    | 683308950      | 19.1gb     | 9.55gb     | 2   | 1   | True        | cluster_3    |
++------------------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
 ```
 
 
@@ -199,16 +219,17 @@ The `index info` functionality supports pattern matching using wildcards. For in
 optic index info -c cluster_1 -p "rocketship*" -s name
 ```
 
-Example output:
+**Example output:**
 ```
-+Index Info-----------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
-| Index                     | Age | Type   | Document Count | Index Size | Shard Size | Pri | Rep | Write Alias | Cluster      |
-+---------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
-| rocketship_communication  | 20  | ISM    | 234955         | 545.9mb    | 272.95mb   | 2   | 1   | True        | cluster_1    |
-| rocketship_navigation     | 64  | ISM    | 8862623        | 13.2gb     | 6.6gb      | 2   | 1   | True        | cluster_1    |
-| rocketship_propulsion     | 58  | ISM    | 2033895        | 420.8kb    | 210.4kb    | 2   | 1   | True        | cluster_1    |
-| rocketship_telemetry      | 80  | ISM    | 683308950      | 14.8gb     | 7.4gb      | 2   | 1   | True        | cluster_1    |
-+---------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
++Index Info----------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+| Index                                | Age | Type   | Document Count | Index Size | Shard Size | Pri | Rep | Write Alias | Cluster      |
++--------------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
+| rocketship_communication-ism-000020  | 20  | ISM    | 234955         | 545.9mb    | 272.95mb   | 2   | 1   | True        | cluster_1    |
+| rocketship_communication-ism-000021  | 20  | ISM    | 234955         | 545.9mb    | 272.95mb   | 2   | 1   | True        | cluster_1    |
+| rocketship_navigation-ism-000021     | 64  | ISM    | 8862623        | 13.2gb     | 6.6gb      | 2   | 1   | True        | cluster_1    |
+| rocketship_propulsion-ism-000203     | 58  | ISM    | 2033895        | 420.8kb    | 210.4kb    | 2   | 1   | True        | cluster_1    |
+| rocketship_telemetry-ism-000064      | 80  | ISM    | 683308950      | 14.8gb     | 7.4gb      | 2   | 1   | True        | cluster_1    |
++--------------------------------------+-----+--------+----------------+------------+------------+-----+-----+-------------+--------------+
 ```
 
 ## OPTIC as Library
