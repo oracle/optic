@@ -2,7 +2,8 @@
 
 ## Table of Contents
 * [What is OPTIC?](#what-is-optic)
-* [Requirements](#Requirements)
+* [QuickStart](#quickstart)
+* [Requirements](#requirements)
 * [Installation](#installation)
   * [User Installation Instructions](#user-installation-instructions)
   * [Developer Installation Instructions](#developer-installation-instructions)
@@ -30,6 +31,65 @@ modular, reuse information, and be intuitively called from the command line (des
   - ```info```: Tool displaying key information (Name, Age, Document Count, Index Size, etc.) about indices
 - ```alias```:  Tool domain containing tools related to OpenSearch aliases
   - ```info```: Tool displaying key information (Index Targets, Write Target?, Filtered Alias?, etc.) about aliases
+
+
+## QuickStart
+To get started with OPTIC, follow these simple steps:
+
+* Run the following command to install OPTIC from PyPI:
+```sh
+pip install opensearch-optic
+```
+* Initialize OPTIC and create default configuration files:
+```sh
+optic init
+```
+
+* Edit the generated `~/.optic/cluster-config.yaml` file to add your OpenSearch clusters information.
+```yaml
+clusters:
+  cluster_1:
+    url: https://myurl01.com:9200
+    username: my_username1
+    password: my_password1
+    verify_ssl: true
+  cluster_2:
+    url: https://myurl02.com:9200
+    username: my_username2
+    password: my_password2
+groups:
+  cluster_group:
+    - cluster_1
+    - cluster_2
+```
+
+* Start using OPTIC. Example commands to get you started:
+
+Display cluster information from cluster named `cluster_1`:
+```sh
+optic cluster info -c cluster_1
+```
+Display cluster information from group of clusters named `cluster_group`:
+```sh
+optic cluster info -c cluster_group
+```
+
+Find all indexes from cluster `cluster_1`:
+```sh
+optic index info -c cluster_1
+```
+
+Find indexes from cluster `cluster_1` that match the pattern `first-index*`:
+```sh
+optic index info -c cluster_1 -p "first-index*"
+```
+
+Find aliases from cluster `cluster_1` that match the pattern `first-alias*`:
+```sh
+optic index info -c cluster_1 -p "first-alias*"
+```
+
+For more information, see the sections below for detailed instructions and usage examples.
 
 ## Requirements
 * Python **>3.12** is <mark>required</mark> to run the OPTIC toolset.
@@ -113,8 +173,6 @@ groups:
   g2:
     - cluster_1
     - my_cluster
-
-
 ```
 * The verify_ssl field is optional (default is true if omitted)
 * The groups field is optional
