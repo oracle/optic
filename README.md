@@ -2,7 +2,7 @@
 
 ## Table of Contents
 * [What is OPTIC?](#what-is-optic)
-* [Quick Start](#quick-start)
+* [QuickStart](#quickstart)
 * [Requirements](#requirements)
 * [Installation](#installation)
   * [User Installation Instructions](#user-installation-instructions)
@@ -33,7 +33,7 @@ modular, reuse information, and be intuitively called from the command line (des
   - ```info```: Tool displaying key information (Index Targets, Write Target?, Filtered Alias?, etc.) about aliases
 
 
-## Quick Start
+## QuickStart
 To get started with OPTIC, follow these simple steps:
 
 * Run the following command to install OPTIC from PyPI:
