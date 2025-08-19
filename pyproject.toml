@@ -54,7 +54,6 @@ dev = [
     "pep8-naming",
     "pre-commit",
     "pytest-mock",
-    "requests-mock"
 ]
 
 [tool.setuptools.packages]
