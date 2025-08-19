@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opensearch-optic"
-version = "1.4.6"
+version = "1.5.0"
 description = "Opensearch Tools for Indices and Clusters"
 readme = "README.md"
 authors = [
@@ -53,7 +53,8 @@ dev = [
     "isort",
     "pep8-naming",
     "pre-commit",
-    "pytest-mock"
+    "pytest-mock",
+    "requests-mock"
 ]
 
 [tool.setuptools.packages]

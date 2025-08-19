@@ -132,7 +132,6 @@ class Cluster:
         :rtype: list
         """
         if not self._index_list:
-            print("Getting cluster index list for", self.custom_name)
             index_list = []
             api = OpenSearchAction(
                 base_url=self.base_url,
@@ -152,6 +151,7 @@ class Cluster:
                 for write_target in alias.write_targets:
                     index_to_write_target[write_target.index] = True
 
+            print("Getting cluster index list for", self.custom_name)
             for index_info in api.response:
                 index_list.append(
                     Index(
@@ -177,7 +177,6 @@ class Cluster:
         :rtype: list
         """
         if not self._alias_list:
-            print("Getting cluster alias list for", self.custom_name)
             alias_list = []
             api = OpenSearchAction(
                 base_url=self.base_url,
@@ -231,6 +230,8 @@ class Cluster:
               ]
             }
             """
+
+            print("Getting cluster alias list for", self.custom_name)
             alias_to_indices = {}
             for alias_info in api.response:
                 if alias_info["alias"] not in alias_to_indices.keys():
