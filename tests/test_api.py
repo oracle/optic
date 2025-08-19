@@ -64,12 +64,8 @@ class TestOpenSearchActionClass:
         ):
             action = OpenSearchAction(
                 base_url="http://example.com/optic",
-                query="test",
                 retries=5,
                 backoff_factor=backoff_factor,
-                usr="u",
-                pwd="p",
-                verify_ssl=False,
             )
             result = action.response
 
@@ -114,11 +110,7 @@ class TestOpenSearchActionClass:
             with pytest.raises(OpticAPIError) as exc_info:
                 action = OpenSearchAction(
                     base_url="http://example.com/optic",
-                    query="test",
                     retries=retries,  # force exhaustion
-                    usr="u",
-                    pwd="p",
-                    verify_ssl=False,
                 )
                 _ = (
                     action.response
