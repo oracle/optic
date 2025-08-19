@@ -28,7 +28,7 @@ class OpenSearchAction:
         backoff_factor=2,
         status_forcelist=(500, 502, 503, 504),
         usr="",
-        pwd=None,
+        pwd="",
         verify_ssl=True,
     ):
         """
