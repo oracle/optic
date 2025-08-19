@@ -89,9 +89,17 @@ class OpenSearchAction:
                 )
                 self._response.raise_for_status()
             except requests.exceptions.RequestException as err:
-                raise OpticAPIError(
-                    f"Request failed after {self.retries} retries {str(err)}"
-                ) from err
+                # Check if retries were exhausted
+                if err.args and isinstance(
+                    err.args[0], urllib3.exceptions.MaxRetryError
+                ):
+                    raise OpticAPIError(
+                        f"Request failed after {self.retries} retries {err}"
+                    ) from err
+                else:
+                    raise OpticAPIError(
+                        f"did not attempt to retry error: {err}"
+                    ) from err
 
             self._response = self._response.json()
 
