@@ -5,6 +5,9 @@ Copyright (c) 2024-2025, Oracle and/or its affiliates. All rights reserved.
 All notable changes to the OPTIC project will be documented in
 this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+# 1.5.1
+* chore: 🔧 updated metadata to include all changes from 1.5.0 🤦🏼‍♂️ 
+
 # 1.5.0
 * feat: 🥅 add retry logic to OpenSearch API calls 
 * fix: 🩹 moved API call notification messages to correctly report order of actions
