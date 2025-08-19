@@ -27,8 +27,8 @@ class OpenSearchAction:
         retries=3,
         backoff_factor=2,
         status_forcelist=(500, 502, 503, 504),
-        usr="",
-        pwd="",
+        usr=None,
+        pwd=None,
         verify_ssl=True,
     ):
         """
@@ -50,8 +50,12 @@ class OpenSearchAction:
         self.retries = retries
         self.backoff_factor = backoff_factor
         self.status_forcelist = status_forcelist
-        self.usr = usr
-        self.pwd = pwd
+        self.usr = (
+            usr or str()
+        )  # Requests 3.0.0 will no longer support None as a username
+        self.pwd = (
+            pwd or str()
+        )  # Requests 3.0.0 will no longer support None as a password
         self.verify_ssl = verify_ssl
         self._response = None
 
