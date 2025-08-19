@@ -8,6 +8,8 @@ this file. This project adheres to [Semantic Versioning](http://semver.org/).
 # 1.5.0
 * feat: 🥅 add retry logic to OpenSearch API calls 
 * fix: 🩹 moved API call notification messages to correctly report order of actions
+* test: ✅ successful request, retry until success, and retry exhaustion tests created
+* fix: 🩹 None is no longer supported as default for password
 
 # 1.4.6
 * docs: 📝 add quick start section
