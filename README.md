@@ -46,24 +46,9 @@ optic init
 ```
 
 * Edit the generated `~/.optic/cluster-config.yaml` file to add your OpenSearch clusters information.
-```yaml
-clusters:
-  cluster_1:
-    url: https://myurl01.com:9200
-    username: my_username1
-    password: my_password1
-    verify_ssl: true
-  cluster_2:
-    url: https://myurl02.com:9200
-    username: my_username2
-    password: my_password2
-groups:
-  cluster_group:
-    - cluster_1
-    - cluster_2
-```
 
-* Start using OPTIC. Example commands to get you started:
+
+#### Example commands to get you started:
 
 Display cluster information from cluster named `cluster_1`:
 ```sh
@@ -149,30 +134,46 @@ in [Settings](#settings-file) and [Using the OPTIC CLI](#using-the-optic-cli))
 ```yaml
 clusters:
   cluster_1:
-    url: https://testurl.com:9100
+    url: https://testurl.com:46
     username: my_username1
     password: my_password
-    verify_ssl: true
   cluster_2:
     url: https://myurl.com:9200
     username: my_username2
     password: '****'
-  my_cluster:
-    url: https://onlineopensearchcluster.com:9300
-    username: my_username3
-    password: '****'
   cluster_3:
-    url: https://anotherurl.com:9400
+    url: https://anotherurl.com:82
     username: my_username4
     password: '****'
+  cluster_4:
+    url: https://anotherurl2.com:82
+    username: my_username5
+    password: '****'
+  cluster_5:
+    url: https://anotherurl3.com:82
+    username: my_username6
+    password: '****'
+  my_cluster:
+    url: https://onlineopensearchcluster.com:634
+    username: my_username3
+    password: '****'
+  dev_cluster:
+    url: https://offlineopensearchcluster.com:634
+    username: my_username3
+    password: '****'
+
 groups:
-  my_cluster_group:
+  dev:
+    - my_cluster
+    - dev_cluster
+  stage:
     - cluster_1
     - cluster_2
     - cluster_3
-  g2:
-    - cluster_1
-    - my_cluster
+  production:
+    - cluster_4
+    - cluster_5
+
 ```
 * The verify_ssl field is optional (default is true if omitted)
 * The groups field is optional
@@ -187,22 +188,21 @@ groups:
 * A default settings file provided below <mark>can be generated using the `optic init` command</mark> (see: [Initialize OPTIC](#initialize-optic)):
 ```yaml
 # File Paths
-settings_file_path: ~/.optic/optic-settings.yaml
-default_cluster_config_file_path: ~/.optic/cluster-config.yaml
+cluster_config_file: ~/.optic/cluster-config.yaml
 
 # Terminal Customization
 disable_terminal_color: False
 
 # Cluster Info Settings
-default_cluster_info_byte_type: gb
+byte_type: gb
 storage_percent_thresholds:
   GREEN: 80
   YELLOW: 85
   RED: 100
 
 # Index/Alias Info Settings
-default_search_pattern: '*'
-default_index_type_patterns:
+search_pattern: '*'
+index_type_patterns:
   ISM: '(.*)-ism-(\d{6})$'
   ISM_MALFORMED: '(.*)-ism$'
   SYSTEM: '(^\..*)$'
@@ -231,7 +231,7 @@ optic <tool_domain> <tool_name> --help
 ```
 To run OPTIC with an alternate settings file path, enter:
 ```
-optic --settings-path <custom_file_path> <tool_domain> <tool_name>
+optic --settings-file <custom_file_path> <tool_domain> <tool_name>
 ```
 
 To display information about clusters from a group of clusters called `my_cluster_group`, enter:

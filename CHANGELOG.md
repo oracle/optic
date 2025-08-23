@@ -5,6 +5,21 @@ Copyright (c) 2024-2025, Oracle and/or its affiliates. All rights reserved.
 All notable changes to the OPTIC project will be documented in
 this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
+# 2.0.0
+* refactor:! 💥 rename CLI options to better align with functionality
+* feat: 🚸 cli defaults now show settings defined in optic-settings.yaml
+* feat: 🚸 optic init now allows for specifying custom destination for created configuration files
+* fix: 🗑️ remove CLI options that were not intended for CLI interface
+  * storage_percent_thresholds
+  * index_type_patterns
+* refactor: 🏗️ Cluster objects are updated with all optic-settings, instead of only cli options
+  * enables additional configuration options in optic-settings.yaml that are not part of cli
+* refactor: 🏗️ get_cluster_info, get_index_info, get_alias_info now use Cluster object as argument instead of ClusterConfig
+* refactor: 🧑‍💻 shorten Cluster object custom_name attribute to name
+* refactor: 🧑‍💻 Settings class renamed to OpticSettings to align with filename and ClusterConfig class name 
+* refactor: 🧑‍💻 index_type_dict attribute in IndexInfo object renamed to index_type_patterns to match configuration setting
+
+
 # 1.5.1
 * chore: 🔧 updated metadata to include all changes from 1.5.0 🤦🏼‍♂️ 
 

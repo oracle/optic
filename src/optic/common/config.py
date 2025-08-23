@@ -8,7 +8,6 @@ import os
 
 import yaml
 
-from optic.cluster.cluster import Cluster
 from optic.common.exceptions import OpticConfigurationFileError
 
 
@@ -33,117 +32,49 @@ def yaml_load(file_path) -> dict:
     return yaml_data
 
 
+def read_cluster_config(cluster_config_file):
+    return ClusterConfig(yaml_load(cluster_config_file))
+
+
 class ClusterConfig:
     def __init__(
         self,
-        cluster_data=None,
-        selected_clusters=None,
-        selected_cluster_properties=None,
+        yaml=None,
     ):
-        self._data = cluster_data or {}
-        self._selected_clusters = selected_clusters or []
-        self._selected_cluster_properties = selected_cluster_properties or {}
+        self._yaml = yaml or {}
         self._groups = None
         self._clusters = None
-        self._selected_cluster_objects = None
 
     @property
     def groups(self) -> dict:
         """
-        Gets cluster group information from data
+        Extracts cluster group information from yaml input
 
-        :return: Dictionary of cluster group information
+        :return: Dictionary of cluster groups defined within the input yaml
         :rtype: dict
         """
         if self._groups is None:
-            self._groups = self._data.get("groups", None)
+            self._groups = self._yaml.get("groups", None)
         return self._groups
 
     @property
     def clusters(self) -> dict:
         """
-        Gets cluster information from data
+        Extracts cluster information from yaml input
 
-        :return: Dictionary of cluster information
+        :return: Dictionary of clusters defined within the input yaml
         :rtype: dict
         """
         if self._clusters is None:
             try:
-                self._clusters = self._data["clusters"]
+                self._clusters = self._yaml["clusters"]
             except KeyError as err:
                 raise OpticConfigurationFileError(
                     "Missing clusters key in configuration information"
                 ) from err
         return self._clusters
 
-    @property
-    def selected_cluster_objects(self) -> list[Cluster]:
-        """
-        Makes list of cluster objects from depending on desired
 
-        :return: List of cluster objects
-        :rtype: list[Cluster]
-        """
-        if self._selected_cluster_objects is None:
-            self._selected_cluster_objects = []
-
-            # Replaces cluster group names with associated clusters
-            if self.groups:
-                for group_name, group_clusters in self.groups.items():
-                    if group_name in self._selected_clusters:
-                        self._selected_clusters.extend(group_clusters)
-                        self._selected_clusters.remove(group_name)
-            # Delete repeats
-            self._selected_clusters = list(set(self._selected_clusters))
-
-            # If no clusters specified, do all clusters
-            default_behavior = len(self._selected_clusters) == 0
-
-            # If a cluster is in desired cluster list, makes object out of it
-            for cluster_name, cluster_data in self.clusters.items():
-                if (cluster_name in self._selected_clusters) or default_behavior:
-                    try:
-                        do_ssl = cluster_data.get("verify_ssl", True)
-                        if type(do_ssl) is not bool:
-                            raise OpticConfigurationFileError(
-                                "Unrecognized SSL option for " + cluster_name
-                            )
-                        new_cluster = Cluster(
-                            base_url=cluster_data["url"],
-                            creds={
-                                "username": cluster_data["username"],
-                                "password": cluster_data["password"],
-                            },
-                            verify_ssl=do_ssl,
-                            custom_name=cluster_name,
-                        )
-                        # Adds all extra properties from _desired_cluster_properties
-                        for (
-                            attribute,
-                            value,
-                        ) in self._selected_cluster_properties.items():
-                            if attribute not in new_cluster.__dict__:
-                                raise OpticConfigurationFileError(
-                                    "Non-existent attribute "
-                                    + attribute
-                                    + " specified in desired_cluster_properties"
-                                )
-                            setattr(new_cluster, attribute, value)
-                        self._selected_cluster_objects.append(new_cluster)
-                        if self._selected_clusters:
-                            self._selected_clusters.remove(cluster_name)
-                    except KeyError as e:
-                        raise OpticConfigurationFileError(
-                            "Improperly formatted fields in cluster " + cluster_name
-                        ) from e
-            # Notifies if any non-existent clusters provided
-            for error_cluster in self._selected_clusters:
-                print(
-                    error_cluster, "is not present in cluster configuration information"
-                )
-        return self._selected_cluster_objects
-
-
-class Settings:
+class OpticSettings:
     def __init__(self, settings_data):
         self.fields = settings_data

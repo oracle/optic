@@ -9,16 +9,16 @@ from terminaltables import AsciiTable
 from optic.common.optic_color import OpticColor
 
 
-def get_alias_info(config_info) -> list:
+def get_alias_info(clusters) -> list:
     """
     Retrieves and packages Alias information into a list of dictionaries
 
-    :param ClusterConfig config_info: Cluster Configuration info object
+    :param list clusters: list of Cluster type objects
     :return: list of dictionaries containing alias information
     :rtype: list
     """
     alias_list = []
-    for cluster in config_info.selected_cluster_objects:
+    for cluster in clusters:
         alias_list.extend(cluster.alias_list)
 
     alias_dicts = []

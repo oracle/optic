@@ -6,8 +6,21 @@
 
 from optic.alias.alias import Alias
 from optic.common.api import OpenSearchAction
-from optic.common.exceptions import OpticConfigurationFileError, OpticDataError
+from optic.common.exceptions import OpticDataError
 from optic.index.index import Index
+
+
+def configure_cluster(cluster, settings):
+    """
+    If there is a attribute in the OpticSettings object that matches an attribute
+    in the Cluster object, and the value for that attribute is not None, set the attribute
+    on the Cluster object to the corresponding value in the OpticSettings object
+
+    """
+    for setting, value in settings.items():
+        if hasattr(cluster, setting) and value:
+            setattr(cluster, setting, value)
+    return cluster
 
 
 class ClusterHealth:
@@ -34,22 +47,22 @@ class Cluster:
         base_url=None,
         creds=None,
         verify_ssl=True,
-        custom_name=None,
-        byte_type=None,
-        index_search_pattern=None,
-        index_types_dict=None,
+        name=None,
+        byte_type=None,  # remove this?
+        search_pattern=None,
+        index_type_patterns=None,
     ):
         self.base_url = base_url
         self.creds = creds
         self.verify_ssl = verify_ssl
-
-        self.custom_name = custom_name
+        self.name = name
         self.byte_type = byte_type
+        self.search_pattern = search_pattern or "*"
+        self.index_type_patterns = index_type_patterns or {}
+
         self._health = None
         self._storage_percent = None
-        self.index_search_pattern = index_search_pattern
         self._index_list = None
-        self.index_types_dict = index_types_dict
         self._alias_list = None
 
     def _calculate_storage_percent(self, disk_list) -> int:
@@ -71,7 +84,7 @@ class Cluster:
                 total += int(disk["disk.total"])
         if total == 0:
             raise OpticDataError(
-                f"Error in [{self.custom_name}] disk capacity calculation"
+                f"Error in [{self.name}] disk capacity calculation"
                 "(Total disk capacity is 0 or null)"
             )
         return int(round(100 * (float(used) / float(total))))
@@ -85,7 +98,7 @@ class Cluster:
         :rtype: ClusterHealth
         """
         if not self._health:
-            print("Getting cluster health for", self.custom_name)
+            print("Getting cluster health for", self.name)
             api = OpenSearchAction(
                 base_url=self.base_url,
                 usr=self.creds["username"],
@@ -106,18 +119,13 @@ class Cluster:
         :rtype: int
         """
         if not self._storage_percent:
-            print("Getting storage percent for", self.custom_name)
-            if self.byte_type != "mb" and self.byte_type != "gb":
-                raise OpticConfigurationFileError(
-                    "Invalid byte type in " + self.custom_name + " request"
-                )
+            print("Getting storage percent for", self.name)
             api = OpenSearchAction(
                 base_url=self.base_url,
                 usr=self.creds["username"],
                 pwd=self.creds["password"],
                 verify_ssl=self.verify_ssl,
-                query="/_cat/allocation?h=disk.used,"
-                "disk.total&format=json&bytes=" + self.byte_type,
+                query="/_cat/allocation?h=disk.used,disk.total&format=json&bytes=mb",
             )
             self._storage_percent = self._calculate_storage_percent(api.response)
 
@@ -139,7 +147,7 @@ class Cluster:
                 pwd=self.creds["password"],
                 verify_ssl=self.verify_ssl,
                 query="/_cat/indices/"
-                + self.index_search_pattern
+                + self.search_pattern
                 + "?format=json&h=health,status,index,uuid,pri,rep,docs.count,"
                 "docs.deleted,store.size,pri.store.size,creation.date.string",
             )
@@ -151,16 +159,16 @@ class Cluster:
                 for write_target in alias.write_targets:
                     index_to_write_target[write_target.index] = True
 
-            print("Getting cluster index list for", self.custom_name)
+            print("Getting cluster index list for", self.name)
             for index_info in api.response:
                 index_list.append(
                     Index(
-                        cluster_name=self.custom_name,
+                        cluster_name=self.name,
                         index_name=index_info["index"],
                         write_alias=index_to_write_target.get(
                             index_info["index"], False
                         ),
-                        index_types_dict=self.index_types_dict,
+                        index_type_patterns=self.index_type_patterns,
                         info_response=index_info,
                     )
                 )
@@ -183,7 +191,7 @@ class Cluster:
                 usr=self.creds["username"],
                 pwd=self.creds["password"],
                 verify_ssl=self.verify_ssl,
-                query="/_cat/aliases/" + self.index_search_pattern + "?format=json",
+                query="/_cat/aliases/" + self.search_pattern + "?format=json",
             )
 
             """
@@ -231,7 +239,7 @@ class Cluster:
             }
             """
 
-            print("Getting cluster alias list for", self.custom_name)
+            print("Getting cluster alias list for", self.name)
             alias_to_indices = {}
             for alias_info in api.response:
                 if alias_info["alias"] not in alias_to_indices.keys():
@@ -244,7 +252,7 @@ class Cluster:
                 alias_list.append(
                     Alias(
                         alias_name=alias_name,
-                        cluster_name=self.custom_name,
+                        cluster_name=self.name,
                         info_response=alias_info,
                     )
                 )
