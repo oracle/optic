@@ -6,7 +6,7 @@
 
 from optic.alias.alias import Alias
 from optic.common.api import OpenSearchAction
-from optic.common.exceptions import OpticConfigurationFileError, OpticDataError
+from optic.common.exceptions import OpticDataError
 from optic.index.index import Index
 
 
@@ -34,22 +34,22 @@ class Cluster:
         base_url=None,
         creds=None,
         verify_ssl=True,
-        custom_name=None,
-        byte_type=None,
+        custom_name=None,  # TO-DO why do we use custom_name ?!?
+        byte_type=None,  # remove this?
         index_search_pattern=None,
-        index_types_dict=None,
+        index_type_patterns=None,
     ):
         self.base_url = base_url
         self.creds = creds
         self.verify_ssl = verify_ssl
-
         self.custom_name = custom_name
         self.byte_type = byte_type
+        self.index_search_pattern = index_search_pattern or "*"
+        self.index_type_patterns = index_type_patterns or {}
+
         self._health = None
         self._storage_percent = None
-        self.index_search_pattern = index_search_pattern
         self._index_list = None
-        self.index_types_dict = index_types_dict
         self._alias_list = None
 
     def _calculate_storage_percent(self, disk_list) -> int:
@@ -107,17 +107,12 @@ class Cluster:
         """
         if not self._storage_percent:
             print("Getting storage percent for", self.custom_name)
-            if self.byte_type != "mb" and self.byte_type != "gb":
-                raise OpticConfigurationFileError(
-                    "Invalid byte type in " + self.custom_name + " request"
-                )
             api = OpenSearchAction(
                 base_url=self.base_url,
                 usr=self.creds["username"],
                 pwd=self.creds["password"],
                 verify_ssl=self.verify_ssl,
-                query="/_cat/allocation?h=disk.used,"
-                "disk.total&format=json&bytes=" + self.byte_type,
+                query="/_cat/allocation?h=disk.used,disk.total&format=json&bytes=mb",
             )
             self._storage_percent = self._calculate_storage_percent(api.response)
 
@@ -160,7 +155,7 @@ class Cluster:
                         write_alias=index_to_write_target.get(
                             index_info["index"], False
                         ),
-                        index_types_dict=self.index_types_dict,
+                        index_type_patterns=self.index_type_patterns,
                         info_response=index_info,
                     )
                 )
