@@ -87,9 +87,11 @@ def cli(ctx, optic_settings_file):
     help="specify a non-default cluster configuration file",
     show_default=True,
 )
-def init(optic_settings_file, cluster_config_file):
+@click.pass_context
+def init(ctx, cluster_config_file):
     """Initialize OPTIC settings,  configuration, and shell completion"""
     try:
+        optic_settings_file = ctx.obj["optic_settings"]["optic_settings_file"]
         initialize_optic(optic_settings_file, cluster_config_file)
     except OpticError as e:
         print(e)
