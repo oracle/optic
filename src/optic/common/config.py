@@ -32,8 +32,8 @@ def yaml_load(file_path) -> dict:
     return yaml_data
 
 
-def read_cluster_config(cluster_config_file):
-    return ClusterConfig(yaml_load(cluster_config_file))
+def read_cluster_config(cluster_config_file_path):
+    return ClusterConfig(yaml_load(cluster_config_file_path))
 
 
 class ClusterConfig:

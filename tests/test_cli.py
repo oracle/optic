@@ -7,7 +7,7 @@ from optic.cli import alias, cli, cluster, default_from_settings, index, init
 
 @pytest.fixture
 def ctx_obj(optic_settings_file_path, optic_settings):
-    optic_settings["optic_settings_file"] = optic_settings_file_path
+    optic_settings["optic_settings_file_path"] = optic_settings_file_path
     yield {"optic_settings": optic_settings}
 
 
@@ -36,11 +36,11 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 optic_settings_file_path,
                 "alias",
                 "info",
-                "--cluster-config-file",
+                "--cluster-config",
                 "dummy.yml",
             ],
         )
@@ -50,11 +50,11 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 "non-existing-settings.yaml",
                 "alias",
                 "info",
-                "--cluster-config-file",
+                "--cluster-config",
                 "dummy.yml",
             ],
         )
@@ -82,7 +82,7 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 optic_settings_file_path,
                 "alias",
                 "info",
@@ -97,11 +97,11 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 "non-existing-settings.yaml",
                 "cluster",
                 "info",
-                "--cluster-config-file",
+                "--cluster-config",
                 "dummy.yml",
             ],
         )
@@ -113,11 +113,11 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 optic_settings_file_path,
                 "cluster",
                 "info",
-                "--cluster-config-file",
+                "--cluster-config",
                 "dummy.yml",
             ],
         )
@@ -132,7 +132,7 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 optic_settings_file_path,
                 "cluster",
                 "info",
@@ -147,11 +147,11 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 "non-existing-settings.yaml",
                 "index",
                 "info",
-                "--cluster-config-file",
+                "--cluster-config",
                 "dummy.yml",
             ],
         )
@@ -168,11 +168,11 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 optic_settings_file_path,
                 "index",
                 "info",
-                "--cluster-config-file",
+                "--cluster-config",
                 "dummy.yml",
             ],
         )
@@ -193,7 +193,7 @@ class TestCli:
         runner.invoke(
             cli,
             [
-                "--optic-settings-file",
+                "--settings",
                 optic_settings_file_path,
                 "index",
                 "info",

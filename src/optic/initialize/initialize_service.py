@@ -59,7 +59,7 @@ groups:
 
 SAMPLE_SETTINGS = """# File Paths
 # File Paths
-cluster_config_file: ~/.optic/cluster-config.yaml
+cluster_config_file_path: ~/.optic/cluster-config.yaml
 
 # Terminal Customization
 disable_terminal_color: False
@@ -84,7 +84,7 @@ index_type_patterns:
 OPTIC_COLOR = OpticColor()
 
 
-def initialize_optic(optic_settings_file, cluster_config_file) -> None:
+def initialize_optic(optic_settings_file_path, cluster_config_file_path) -> None:
     """
     Initializes the Optic configuration by setting up the cluster configuration,
     default settings, and shell completion.
@@ -92,19 +92,19 @@ def initialize_optic(optic_settings_file, cluster_config_file) -> None:
     :return: None
     :rtype: None
     """
-    setup_settings(optic_settings_file)
-    setup_cluster_config(cluster_config_file)
+    setup_settings(optic_settings_file_path)
+    setup_cluster_config(cluster_config_file_path)
     setup_shell_completion()
 
 
-def setup_cluster_config(cluster_config_file) -> None:
+def setup_cluster_config(cluster_config_file_path) -> None:
     """
     Sets up sample cluster config file
 
     :return: None
     :rtype: None
     """
-    cluster_config_path = os.path.expanduser(cluster_config_file)
+    cluster_config_path = os.path.expanduser(cluster_config_file_path)
 
     # Prompts user for permission to create cluster config file if file does not exists
     if not validate_file_exists(cluster_config_path):
@@ -135,14 +135,14 @@ def setup_cluster_config(cluster_config_file) -> None:
         )
 
 
-def setup_settings(optic_settings_file) -> None:
+def setup_settings(optic_settings_file_path) -> None:
     """
     Sets up default settings file
 
     :return: None
     :rtype: None
     """
-    settings_file_path = os.path.expanduser(optic_settings_file)
+    settings_file_path = os.path.expanduser(optic_settings_file_path)
 
     # Prompts user for permission to create a settings file
     if not validate_file_exists(settings_file_path):

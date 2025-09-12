@@ -75,7 +75,7 @@ def optic_settings_file(optic_settings_file_path, cluster_config_file_path):
     with open(optic_settings_file_path, "w") as f:
         yaml.dump(
             {
-                "cluster_config_file": cluster_config_file_path,
+                "cluster_config_file_path": cluster_config_file_path,
                 "disable_terminal_color": False,
                 "search_pattern": "*",
                 "byte_type": "gb",
