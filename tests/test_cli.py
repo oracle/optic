@@ -2,7 +2,7 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from optic.cli import alias, cli, cluster, default_from_settings, index, init
+from optic.cli import alias, cli, cluster, get_default_from_optic_settings, index, init
 
 
 @pytest.fixture
@@ -212,28 +212,28 @@ class TestCli:
         runner.invoke(cli, ["init"])
         mock_initialize_optic.assert_called_once()
 
-    def test_option_default_from_settings_absent(self, ctx_obj):
+    def test_option_get_default_from_optic_settings_absent(self, ctx_obj):
         context = click.Context(cli.commands["alias"].commands["info"], obj=ctx_obj)
-        option_class = default_from_settings("example_setting")
+        option_class = get_default_from_optic_settings("example_setting")
         option = option_class(["--example"], required=False)
         with pytest.raises(SystemExit) as e:
             option.get_default(context)
         assert e.type == SystemExit
         assert e.value.code == 1
 
-    def test_option_default_from_settings_no_obj(self):
+    def test_option_get_default_from_optic_settings_no_obj(self):
         context = click.Context(cli.commands["alias"].commands["info"], obj=None)
-        option_class = default_from_settings("example_setting")
+        option_class = get_default_from_optic_settings("example_setting")
         option = option_class(["--example"], required=False)
         default_value = option.get_default(context)
         assert default_value is None
 
-    def test_option_default_from_settings_present(self):
+    def test_option_get_default_from_optic_settings_present(self):
         mock_settings = {"optic_settings": {"example_setting": "test_value"}}
         context = click.Context(
             cli.commands["alias"].commands["info"], obj=mock_settings
         )
-        option_class = default_from_settings("example_setting")
+        option_class = get_default_from_optic_settings("example_setting")
         option = option_class(["--example"], required=False)
         default_value = option.get_default(context)
         assert default_value == "test_value"

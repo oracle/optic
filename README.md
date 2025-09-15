@@ -231,7 +231,7 @@ optic <tool_domain> <tool_name> --help
 ```
 To run OPTIC with an alternate settings file path, enter:
 ```
-optic --settings-file <custom_file_path> <tool_domain> <tool_name>
+optic --settings <custom_file_path> <tool_domain> <tool_name>
 ```
 
 To display information about clusters from a group of clusters called `my_cluster_group`, enter:
