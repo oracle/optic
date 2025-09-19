@@ -22,7 +22,7 @@ urllib3.disable_warnings()
 class OpenSearchAction:
     def __init__(
         self,
-        base_url="",
+        url="",
         query="",
         retries=3,
         backoff_factor=2,
@@ -34,8 +34,8 @@ class OpenSearchAction:
         """
         Wraps the methods required to execute REST calls against the OpenSearch API.
         Args:
-            base_url (str): The URL to send the request to
-            query (str): additional string added to the end of base_url
+            url (str): The URL to send the request to
+            query (str): additional string added to the end of url
             retries (int): Maximum number of retries
             backoff_factor (float): Backoff factor to apply between retries in seconds
             status_forcelist (tuple): HTTP status codes to retry on
@@ -45,7 +45,7 @@ class OpenSearchAction:
 
         """
 
-        self.base_url = base_url
+        self.url = url
         self.query = query
         self.retries = retries
         self.backoff_factor = backoff_factor
@@ -69,7 +69,7 @@ class OpenSearchAction:
         """
 
         if not self._response:
-            url = self.base_url + self.query
+            url = self.url + self.query
             logging.debug(
                 f"creating REST request to {url} with "
                 f"{self.retries} retries, backoff {self.backoff_factor}, and ssl verify {self.verify_ssl}"

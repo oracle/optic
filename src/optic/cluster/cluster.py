@@ -44,7 +44,7 @@ class ClusterHealth:
 class Cluster:
     def __init__(
         self,
-        base_url=None,
+        url=None,
         auth=None,
         verify_ssl=True,
         name=None,
@@ -52,7 +52,7 @@ class Cluster:
         search_pattern=None,
         index_type_patterns=None,
     ):
-        self.base_url = base_url
+        self.url = url
         self.auth = auth
         self.verify_ssl = verify_ssl
         self.name = name
@@ -100,7 +100,7 @@ class Cluster:
         if not self._health:
             print("Getting cluster health for", self.name)
             api = OpenSearchAction(
-                base_url=self.base_url,
+                url=self.url,
                 usr=self.auth["username"],
                 pwd=self.auth["password"],
                 verify_ssl=self.verify_ssl,
@@ -121,7 +121,7 @@ class Cluster:
         if not self._storage_percent:
             print("Getting storage percent for", self.name)
             api = OpenSearchAction(
-                base_url=self.base_url,
+                url=self.url,
                 usr=self.auth["username"],
                 pwd=self.auth["password"],
                 verify_ssl=self.verify_ssl,
@@ -142,7 +142,7 @@ class Cluster:
         if not self._index_list:
             index_list = []
             api = OpenSearchAction(
-                base_url=self.base_url,
+                url=self.url,
                 usr=self.auth["username"],
                 pwd=self.auth["password"],
                 verify_ssl=self.verify_ssl,
@@ -187,7 +187,7 @@ class Cluster:
         if not self._alias_list:
             alias_list = []
             api = OpenSearchAction(
-                base_url=self.base_url,
+                url=self.url,
                 usr=self.auth["username"],
                 pwd=self.auth["password"],
                 verify_ssl=self.verify_ssl,

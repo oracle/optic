@@ -26,7 +26,7 @@ class TestOpenSearchActionClass:
         mock_response.status_code = 200
         mock_response.json.return_value = {"request": "valid"}
 
-        api = OpenSearchAction(base_url="http://example.com/optic")
+        api = OpenSearchAction(url="http://example.com/optic")
         mocker.patch("requests.Session.get", return_value=mock_response)
 
         assert api.response == {"request": "valid"}
@@ -63,7 +63,7 @@ class TestOpenSearchActionClass:
             patch("time.sleep", side_effect=_patched_sleep),
         ):
             action = OpenSearchAction(
-                base_url="http://example.com/optic",
+                url="http://example.com/optic",
                 retries=5,
                 backoff_factor=backoff_factor,
             )
@@ -109,7 +109,7 @@ class TestOpenSearchActionClass:
 
             with pytest.raises(OpticAPIError) as exc_info:
                 action = OpenSearchAction(
-                    base_url="http://example.com/optic",
+                    url="http://example.com/optic",
                     retries=retries,  # force exhaustion
                 )
                 _ = (

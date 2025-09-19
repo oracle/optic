@@ -45,7 +45,7 @@ def get_selected_clusters(cluster_config, selected_cluster_names):
                     "Unrecognized SSL option for " + cluster_name
                 )
             cluster = Cluster(
-                base_url=cluster_data["url"],
+                url=cluster_data["url"],
                 auth={
                     "username": cluster_data["username"],
                     "password": cluster_data["password"],

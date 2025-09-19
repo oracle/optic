@@ -497,7 +497,7 @@ import json
 
 cluster = optic.Cluster(**{
     "name": "stage-jfk",
-    "base_url": "https://stage-jfk.example.com:9200",
+    "url": "https://stage-jfk.example.com:9200",
     "auth" : {"password": "*******",, "username": "oracle"},
     "search_pattern": '*air*'
     }
