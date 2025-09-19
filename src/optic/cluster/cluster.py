@@ -45,7 +45,7 @@ class Cluster:
     def __init__(
         self,
         base_url=None,
-        creds=None,
+        auth=None,
         verify_ssl=True,
         name=None,
         byte_type=None,  # remove this?
@@ -53,7 +53,7 @@ class Cluster:
         index_type_patterns=None,
     ):
         self.base_url = base_url
-        self.creds = creds
+        self.auth = auth
         self.verify_ssl = verify_ssl
         self.name = name
         self.byte_type = byte_type
@@ -101,8 +101,8 @@ class Cluster:
             print("Getting cluster health for", self.name)
             api = OpenSearchAction(
                 base_url=self.base_url,
-                usr=self.creds["username"],
-                pwd=self.creds["password"],
+                usr=self.auth["username"],
+                pwd=self.auth["password"],
                 verify_ssl=self.verify_ssl,
                 query="/_cluster/health?pretty",
             )
@@ -122,8 +122,8 @@ class Cluster:
             print("Getting storage percent for", self.name)
             api = OpenSearchAction(
                 base_url=self.base_url,
-                usr=self.creds["username"],
-                pwd=self.creds["password"],
+                usr=self.auth["username"],
+                pwd=self.auth["password"],
                 verify_ssl=self.verify_ssl,
                 query="/_cat/allocation?h=disk.used,disk.total&format=json&bytes=mb",
             )
@@ -143,8 +143,8 @@ class Cluster:
             index_list = []
             api = OpenSearchAction(
                 base_url=self.base_url,
-                usr=self.creds["username"],
-                pwd=self.creds["password"],
+                usr=self.auth["username"],
+                pwd=self.auth["password"],
                 verify_ssl=self.verify_ssl,
                 query="/_cat/indices/"
                 + self.search_pattern
@@ -188,8 +188,8 @@ class Cluster:
             alias_list = []
             api = OpenSearchAction(
                 base_url=self.base_url,
-                usr=self.creds["username"],
-                pwd=self.creds["password"],
+                usr=self.auth["username"],
+                pwd=self.auth["password"],
                 verify_ssl=self.verify_ssl,
                 query="/_cat/aliases/" + self.search_pattern + "?format=json",
             )

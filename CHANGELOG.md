@@ -12,6 +12,7 @@ this file. This project adheres to [Semantic Versioning](http://semver.org/).
 * fix: 🗑️ remove CLI options that were not intended for CLI interface
   * storage_percent_thresholds
   * index_type_patterns
+* refactor: 🚸 rename Cluster attribute `creds` to `auth`
 * refactor: 🏗️ Cluster objects are updated with all optic-settings, instead of only cli options
   * enables additional configuration options in optic-settings.yaml that are not part of cli
 * refactor: 🏗️ get_cluster_info, get_index_info, get_alias_info now use Cluster object as argument instead of ClusterConfig

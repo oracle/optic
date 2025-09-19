@@ -46,7 +46,7 @@ def get_selected_clusters(cluster_config, selected_cluster_names):
                 )
             cluster = Cluster(
                 base_url=cluster_data["url"],
-                creds={
+                auth={
                     "username": cluster_data["username"],
                     "password": cluster_data["password"],
                 },
