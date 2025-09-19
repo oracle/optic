@@ -52,7 +52,6 @@ def get_selected_clusters(cluster_config, selected_cluster_names):
                 },
                 verify_ssl=do_ssl,
                 name=cluster_name,
-                # byte_type=self.settings['default_cluster_info_byte_type']
             )
 
             selected_clusters.append(cluster)
