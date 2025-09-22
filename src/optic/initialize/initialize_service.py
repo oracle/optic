@@ -22,43 +22,58 @@ SAMPLE_CLUSTER_CONFIG = """clusters:
     url: https://myurl.com:9200
     username: my_username2
     password: '****'
-  my_cluster:
-    url: https://onlineopensearchcluster.com:634
-    username: my_username3
-    password: '****'
   cluster_3:
     url: https://anotherurl.com:82
     username: my_username4
     password: '****'
+  cluster_4:
+    url: https://anotherurl2.com:82
+    username: my_username5
+    password: '****'
+  cluster_5:
+    url: https://anotherurl3.com:82
+    username: my_username6
+    password: '****'
+  my_cluster:
+    url: https://onlineopensearchcluster.com:634
+    username: my_username3
+    password: '****'
+  dev_cluster:
+    url: https://offlineopensearchcluster.com:634
+    username: my_username3
+    password: '****'
 
 groups:
-  my_group:
+  dev:
+    - my_cluster
+    - dev_cluster
+  stage:
     - cluster_1
     - cluster_2
     - cluster_3
-  g2:
-    - cluster_1
-    - my_cluster
+  production:
+    - cluster_4
+    - cluster_5
 
 """
 
 SAMPLE_SETTINGS = """# File Paths
-settings_file_path: ~/.optic/optic-settings.yaml
-default_cluster_config_file_path: ~/.optic/cluster-config.yaml
+# File Paths
+cluster_config_file_path: ~/.optic/cluster-config.yaml
 
 # Terminal Customization
 disable_terminal_color: False
 
 # Cluster Info Settings
-default_cluster_info_byte_type: gb
 storage_percent_thresholds:
   GREEN: 80
   YELLOW: 85
   RED: 100
 
 # Index/Alias Info Settings
-default_search_pattern: '*'
-default_index_type_patterns:
+byte_type: gb
+search_pattern: '*'
+index_type_patterns:
   ISM: '(.*)-ism-(\\d{6})$'
   ISM_MALFORMED: '(.*)-ism$'
   SYSTEM: '(^\\..*)$'
@@ -69,7 +84,7 @@ default_index_type_patterns:
 OPTIC_COLOR = OpticColor()
 
 
-def initialize_optic() -> None:
+def initialize_optic(optic_settings_file_path, cluster_config_file_path) -> None:
     """
     Initializes the Optic configuration by setting up the cluster configuration,
     default settings, and shell completion.
@@ -77,19 +92,19 @@ def initialize_optic() -> None:
     :return: None
     :rtype: None
     """
-    setup_cluster_config()
-    setup_settings()
+    setup_settings(optic_settings_file_path)
+    setup_cluster_config(cluster_config_file_path)
     setup_shell_completion()
 
 
-def setup_cluster_config() -> None:
+def setup_cluster_config(cluster_config_file_path) -> None:
     """
     Sets up sample cluster config file
 
     :return: None
     :rtype: None
     """
-    cluster_config_path = os.path.expanduser(f"{CONFIG_BASE_DIR}/cluster-config.yaml")
+    cluster_config_path = os.path.expanduser(cluster_config_file_path)
 
     # Prompts user for permission to create cluster config file if file does not exists
     if not validate_file_exists(cluster_config_path):
@@ -120,14 +135,14 @@ def setup_cluster_config() -> None:
         )
 
 
-def setup_settings() -> None:
+def setup_settings(optic_settings_file_path) -> None:
     """
     Sets up default settings file
 
     :return: None
     :rtype: None
     """
-    settings_file_path = os.path.expanduser(f"{CONFIG_BASE_DIR}/optic-settings.yaml")
+    settings_file_path = os.path.expanduser(optic_settings_file_path)
 
     # Prompts user for permission to create a settings file
     if not validate_file_exists(settings_file_path):

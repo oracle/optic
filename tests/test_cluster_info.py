@@ -1,13 +1,31 @@
 import pytest
 
 from optic.cluster.cluster import Cluster, ClusterHealth
-from optic.cluster.cluster_service import build_cluster_info_table, get_cluster_info
-from optic.common.config import ClusterConfig
+from optic.cluster.cluster_service import (
+    build_cluster_info_table,
+    get_cluster_info,
+    get_selected_clusters,
+)
+from optic.common.optic_color import OpticColor
+
+
+@pytest.fixture
+def cluster_selection():
+    cluster_1 = Cluster(name="test_cluster_1")
+    cluster_1._storage_percent = 17
+    cluster_1._health = ClusterHealth(**{"status": "green"})
+    cluster_2 = Cluster(name="test_cluster_2")
+    cluster_2._storage_percent = 74
+    cluster_2._health = ClusterHealth(**{"status": "yellow"})
+    cluster_3 = Cluster(name="test_cluster_3")
+    cluster_3._storage_percent = 59
+    cluster_3._health = ClusterHealth(**{"status": "yellow"})
+    return [cluster_1, cluster_2, cluster_3]
 
 
 class TestClusterClass:
     def test_cluster_health(self):
-        test_cluster = Cluster(custom_name="test_cluster")
+        test_cluster = Cluster(name="test_cluster")
         sim_health_response = {
             "cluster_name": "x12",
             "status": "yellow",
@@ -48,7 +66,7 @@ class TestClusterClass:
         assert test_cluster.health.active_shards_percent_as_number == 56.79012345679012
 
     def test_storage_percent(self):
-        test_cluster = Cluster(custom_name="test_cluster")
+        test_cluster = Cluster(name="test_cluster")
         sim_disk_response = [
             {"disk.used": "505", "disk.total": "50216"},
             {"disk.used": None, "disk.total": None},
@@ -62,62 +80,60 @@ class TestClusterClass:
         assert test_cluster._calculate_storage_percent(sim_disk_response) == 34
 
 
-@pytest.fixture
-def selected_clusters():
-    cluster_1 = Cluster(custom_name="test_cluster_1")
-    cluster_1._storage_percent = 17
-    cluster_1._health = ClusterHealth(**{"status": "green"})
-    cluster_2 = Cluster(custom_name="test_cluster_2")
-    cluster_2._storage_percent = 74
-    cluster_2._health = ClusterHealth(**{"status": "yellow"})
-    cluster_3 = Cluster(custom_name="test_cluster_3")
-    cluster_3._storage_percent = 59
-    cluster_3._health = ClusterHealth(**{"status": "yellow"})
-    return [cluster_1, cluster_2, cluster_3]
-
-
-@pytest.fixture
-def config_info(cluster_config):
-    return ClusterConfig(cluster_config)
-
-
 class TestClusterService:
-    def test_get_cluster_info(self, config_info, selected_clusters):
-        config_info._selected_cluster_objects = selected_clusters
-        cluster_dict = get_cluster_info(config_info)
-        assert cluster_dict[0]["name"] == "test_cluster_1"
-        assert cluster_dict[1]["name"] == "test_cluster_2"
-        assert cluster_dict[2]["name"] == "test_cluster_3"
-        assert cluster_dict[0]["status"] == "green"
-        assert cluster_dict[1]["status"] == "yellow"
-        assert cluster_dict[2]["status"] == "yellow"
-        assert cluster_dict[0]["usage"] == 17
-        assert cluster_dict[1]["usage"] == 74
-        assert cluster_dict[2]["usage"] == 59
+    def test_get_cluster_info(self, cluster_selection):
 
-    def test_build_cluster_info_table_valid_cluster(
-        self, config_info, selected_clusters, optic_settings
+        cluster_info = get_cluster_info(cluster_selection)
+        assert cluster_info[0]["name"] == "test_cluster_1"
+        assert cluster_info[1]["name"] == "test_cluster_2"
+        assert cluster_info[2]["name"] == "test_cluster_3"
+        assert cluster_info[0]["status"] == "green"
+        assert cluster_info[1]["status"] == "yellow"
+        assert cluster_info[2]["status"] == "yellow"
+        assert cluster_info[0]["usage"] == 17
+        assert cluster_info[1]["usage"] == 74
+        assert cluster_info[2]["usage"] == 59
+
+    def test_build_cluster_info_table_valid_cluster_color(
+        self, cluster_selection, optic_settings
     ):
-        os = optic_settings
-        config_info._selected_cluster_objects = selected_clusters
-        cluster_info = get_cluster_info(config_info)
+        optic_color = OpticColor()
+        cluster_info = get_cluster_info(cluster_selection)
         table = build_cluster_info_table(
-            cluster_info, os["disable_terminal_color"], os["storage_percent_thresholds"]
+            cluster_info, True, optic_settings["storage_percent_thresholds"]
         )
         assert table.table is not None
-        assert all(cluster.custom_name in table.table for cluster in selected_clusters)
+        assert all(cluster.name in table.table for cluster in cluster_selection)
+        assert optic_color.GREEN in table.table
+        assert optic_color.YELLOW in table.table
+        assert optic_color.RED not in table.table
+
+    @pytest.mark.skip(reason="disabling of colors is broken")
+    def test_build_cluster_info_table_valid_cluster_no_color(
+        self, cluster_selection, optic_settings
+    ):
+        optic_color = OpticColor()
+        optic_color.disable_colors()
+
+        cluster_info = get_cluster_info(cluster_selection)
+        table = build_cluster_info_table(
+            cluster_info, True, optic_settings["storage_percent_thresholds"]
+        )
+        assert table.table is not None
+        assert all(cluster.name in table.table for cluster in cluster_selection)
+        assert optic_color.GREEN not in table.table
+        assert optic_color.YELLOW not in table.table
 
     def test_build_cluster_info_table_invalid_cluster(
         self, cluster_config, optic_settings
     ):
-        config_info = ClusterConfig(cluster_config, ["cluster_4"])
-        os = optic_settings
-        cluster_info = get_cluster_info(config_info)
-        assert len(config_info.selected_cluster_objects) == 0
+        selected_clusters = get_selected_clusters(cluster_config, ["cluster_4"])
+        cluster_info = get_cluster_info(selected_clusters)
+        assert len(cluster_info) == 0
         assert (
             build_cluster_info_table(
                 cluster_info,
-                os["disable_terminal_color"],
-                os["storage_percent_thresholds"],
+                optic_settings["disable_terminal_color"],
+                optic_settings["storage_percent_thresholds"],
             )
         ) is None

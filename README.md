@@ -19,7 +19,7 @@
   * [get_alias_info()](#get_alias_info)
 
 ## What is OPTIC?
-OPTIC (OpenSearch Tools for Indices and Clusters) is a Python language tool suite designed to offer OpenSearch Engineers
+OPTIC (OpenSearch Tools for Indices and Clusters) is a Python language tool suite designed to offer OpenSearch users
 utilities to troubleshoot, analyze, and make changes to OpenSearch clusters and indices.  OPTIC is designed to offer
 both a rich command line experience and a library that can be called from other pieces of code.
 
@@ -46,45 +46,30 @@ optic init
 ```
 
 * Edit the generated `~/.optic/cluster-config.yaml` file to add your OpenSearch clusters information.
-```yaml
-clusters:
-  cluster_1:
-    url: https://myurl01.com:9200
-    username: my_username1
-    password: my_password1
-    verify_ssl: true
-  cluster_2:
-    url: https://myurl02.com:9200
-    username: my_username2
-    password: my_password2
-groups:
-  cluster_group:
-    - cluster_1
-    - cluster_2
-```
 
-* Start using OPTIC. Example commands to get you started:
 
-Display cluster information from cluster named `cluster_1`:
+#### Example commands to get you started:
+
+Display cluster information from the cluster named `cluster_1`:
 ```sh
 optic cluster info -c cluster_1
 ```
-Display cluster information from group of clusters named `cluster_group`:
+Display cluster information from the group of clusters named `cluster_group`:
 ```sh
 optic cluster info -c cluster_group
 ```
 
-Find all indexes from cluster `cluster_1`:
+Find all indexes from the cluster `cluster_1`:
 ```sh
 optic index info -c cluster_1
 ```
 
-Find indexes from cluster `cluster_1` that match the pattern `first-index*`:
+Find indexes from the cluster `cluster_1` that match the pattern `first-index*`:
 ```sh
 optic index info -c cluster_1 -p "first-index*"
 ```
 
-Find aliases from cluster `cluster_1` that match the pattern `first-alias*`:
+Find aliases from the cluster `cluster_1` that match the pattern `first-alias*`:
 ```sh
 optic index info -c cluster_1 -p "first-alias*"
 ```
@@ -148,31 +133,50 @@ in [Settings](#settings-file) and [Using the OPTIC CLI](#using-the-optic-cli))
 * A sample configuration file provided below <mark>can be generated using the `optic init` command</mark> (see: [Initialize OPTIC](#initialize-optic)):
 ```yaml
 clusters:
-  cluster_1:
-    url: https://testurl.com:9100
-    username: my_username1
+  prod-lga:
+    url: https://prod-lga.example.com:9200
+    username: oracle
     password: my_password
-    verify_ssl: true
-  cluster_2:
-    url: https://myurl.com:9200
-    username: my_username2
+  prod-jfk:
+    url: https://prod-jfk.example.com:9200
+    username: oracle
     password: '****'
-  my_cluster:
-    url: https://onlineopensearchcluster.com:9300
-    username: my_username3
+  prod-sfo:
+    url: https://prod-sfo.example.com:9200
+    username: oracle
     password: '****'
-  cluster_3:
-    url: https://anotherurl.com:9400
-    username: my_username4
+  stage-lga:
+    url: https://stage-lga.example.com:9200
+    username: oracle
+    password: my_password
+  stage-jfk:
+    url: https://stage-jfk.example.com:9200
+    username: oracle
+    password: '****'
+  stage-sfo:
+    url: https://stage-sfo.example.com:9200
+    username: oracle
+    password: '****'
+  dev-lga:
+    url: https://dev-lga.example.com:9200
+    username: oracle
+    password: my_password
+  dev-jfk:
+    url: https://dev-jfk.example.com:9200
+    username: oracle
     password: '****'
 groups:
-  my_cluster_group:
-    - cluster_1
-    - cluster_2
-    - cluster_3
-  g2:
-    - cluster_1
-    - my_cluster
+  dev:
+    - dev-lga
+    - dev-jfk
+  stage:
+    - stage-lga
+    - stage-jfk
+    - stage-sfo
+  production:
+    - prod-lga
+    - prod-jfk
+
 ```
 * The verify_ssl field is optional (default is true if omitted)
 * The groups field is optional
@@ -187,22 +191,21 @@ groups:
 * A default settings file provided below <mark>can be generated using the `optic init` command</mark> (see: [Initialize OPTIC](#initialize-optic)):
 ```yaml
 # File Paths
-settings_file_path: ~/.optic/optic-settings.yaml
-default_cluster_config_file_path: ~/.optic/cluster-config.yaml
+cluster_config_file_path: ~/.optic/cluster-config.yaml
 
 # Terminal Customization
 disable_terminal_color: False
 
 # Cluster Info Settings
-default_cluster_info_byte_type: gb
+byte_type: gb
 storage_percent_thresholds:
   GREEN: 80
   YELLOW: 85
   RED: 100
 
 # Index/Alias Info Settings
-default_search_pattern: '*'
-default_index_type_patterns:
+search_pattern: '*'
+index_type_patterns:
   ISM: '(.*)-ism-(\d{6})$'
   ISM_MALFORMED: '(.*)-ism$'
   SYSTEM: '(^\..*)$'
@@ -231,7 +234,7 @@ optic <tool_domain> <tool_name> --help
 ```
 To run OPTIC with an alternate settings file path, enter:
 ```
-optic --settings-path <custom_file_path> <tool_domain> <tool_name>
+optic --settings <custom_file_path> <tool_domain> <tool_name>
 ```
 
 To display information about clusters from a group of clusters called `my_cluster_group`, enter:
@@ -304,65 +307,81 @@ The recommended way to call OPTIC functionality from code is generally as follow
 * Call the desired action w/ the ClusterConfig object as an argument and use any returned data as desired
 
 ### get_cluster_info()
-Properties specific to get_cluster_info are:
-
-    byte_type - specify a storage unit for the query (mb or gb)
-
 The sample code below queries cluster information from a selection of clusters and prints the results:
 ```python
 import optic
 import json
 
-cluster_info = {
+cluster_config = {
     "clusters": {
-        "cluster_1": {
-            "url" : "https://exampleurl.com",
-            "username": "example_username",
-            "password": "****",
-            "verify_ssl": False
+        "prod-lga": {
+            "password": "*******",
+            "url": "https://prod-lga.example.com:9200",
+            "username": "oracle",
         },
-        "cluster_2": {
-            "url" : "https://exampleurl2.com",
-            "username": "example_username",
-            "password": "****",
+        "prod-jfk": {
+            "password": "*******",
+            "url": "https://prod-jfk.example.com:9200",
+            "username": "oracle",
         },
-        "cluster_3": {
-            "url" : "https://exampleurl3.com",
-            "username": "example_username",
-            "password": "****",
+        "prod-sfo": {
+            "password": "*******",
+            "url": "https://prod-sfo.example.com:9200",
+            "username": "oracle",
         },
-        "cluster_4": {
-            "url" : "https://exampleurl4.com",
-            "username": "example_username",
-            "password": "****",
-        }
+        "stage-lga": {
+            "password": "*******",
+            "url": "https://stage-lga.example.com:9200",
+            "username": "oracle",
+        },
+        "stage-jfk": {
+            "password": "*******",
+            "url": "https://stage-jfk.example.com:9200",
+            "username": "oracle",
+        },
+        "stage-sfo": {
+            "password": "*******",
+            "url": "https://stage-sfo.example.com:9200",
+            "username": "oracle",
+        },
+         "dev-lga": {
+            "password": "*******",
+            "url": "https://dev-lga.example.com:9200",
+            "username": "oracle",
+        },
+        "dev-jfk": {
+            "password": "*******",
+            "url": "https://dev-jfk.example.com:9200",
+            "username": "oracle",
+        },
+        "dev-sfo": {
+            "password": "*******",
+            "url": "https://dev-sfo.example.com:9200",
+            "username": "oracle",
+        },
     },
     "groups": {
-        "group1": [
-            "cluster_3",
-            "cluster_4"
-        ],
-        "g2": [
-            "cluster_2",
-            "cluster_3"
-        ]
-    }
+        "prod": ["prod-lga", "prod-jfk", "prod-sfo"],
+        "stage": ["stage-lga", "stage-jfk", "stage-sfo"],
+        "dev": ["dev-lga", "dev-jfk", "dev-sfo"],
+    },
 }
-desired_clusters = ["cluster_3", "g2"]
-desired_cluster_properties = {
-    "byte_type": "mb"
-}
-cluster_generator = optic.ClusterConfig(cluster_info, desired_clusters, desired_cluster_properties)
 
-cluster_info_response = optic.get_cluster_info(cluster_generator)
+
+cluster_selection = ["prod", "dev-sfo"]
+selected_clusters = optic.get_selected_clusters(
+    optic.ClusterConfig(cluster_config), cluster_selection
+)
+cluster_info = optic.get_cluster_info(selected_clusters)
+
 print("CLUSTER INFORMATION")
-print(json.dumps(cluster_info_response, indent=3))
+print(json.dumps(cluster_info, indent=3))
 ```
 ### get_index_info()
-Properties specific to get_index_info are:
+Properties specific to `get_index_info` are:
 
-    index_search_pattern - specify a glob search pattern for the query
-    index_types_dict - specify a dictionary with index_type_name -> regular_expression pairs
+    search_pattern - specify a glob search pattern for the query
+    index_type_patterns - specify a dictionary with index_type_name -> regular_expression pairs
 
 Additionally, get_index_info can support two more <mark>optional</mark> parameters that allow for more advanced filtering and sorting of data:
 
@@ -390,125 +409,103 @@ The sample code below queries index information from a cluster and prints the re
 import optic
 import json
 
-cluster_info = {
+cluster_config = {
     "clusters": {
-        "cluster_1": {
-            "url" : "https://exampleurl.com",
-            "username": "example_username",
-            "password": "****",
-            "verify_ssl": False
+        "prod-lga": {
+            "password": "*******",
+            "url": "https://prod-lga.example.com:9200",
+            "username": "oracle",
         },
-        "cluster_2": {
-            "url" : "https://exampleurl2.com",
-            "username": "example_username",
-            "password": "****",
+        "prod-jfk": {
+            "password": "*******",
+            "url": "https://prod-jfk.example.com:9200",
+            "username": "oracle",
         },
-        "cluster_3": {
-            "url" : "https://exampleurl3.com",
-            "username": "example_username",
-            "password": "****",
+        "prod-sfo": {
+            "password": "*******",
+            "url": "https://prod-sfo.example.com:9200",
+            "username": "oracle",
         },
-        "cluster_4": {
-            "url" : "https://exampleurl4.com",
-            "username": "example_username",
-            "password": "****",
-        }
+        "stage-lga": {
+            "password": "*******",
+            "url": "https://stage-lga.example.com:9200",
+            "username": "oracle",
+        },
+        "stage-jfk": {
+            "password": "*******",
+            "url": "https://stage-jfk.example.com:9200",
+            "username": "oracle",
+        },
+        "stage-sfo": {
+            "password": "*******",
+            "url": "https://stage-sfo.example.com:9200",
+            "username": "oracle",
+        },
+         "dev-lga": {
+            "password": "*******",
+            "url": "https://dev-lga.example.com:9200",
+            "username": "oracle",
+        },
+        "dev-jfk": {
+            "password": "*******",
+            "url": "https://dev-jfk.example.com:9200",
+            "username": "oracle",
+        },
+        "dev-sfo": {
+            "password": "*******",
+            "url": "https://dev-sfo.example.com:9200",
+            "username": "oracle",
+        },
     },
     "groups": {
-        "group1": [
-            "cluster_3",
-            "cluster_4"
-        ],
-        "g2": [
-            "cluster_2",
-            "cluster_3"
-        ]
-    }
+        "prod": ["prod-lga", "prod-jfk", "prod-sfo"],
+        "stage": ["stage-lga", "stage-jfk", "stage-sfo"],
+        "dev": ["dev-lga", "dev-jfk", "dev-sfo"],
+    },
 }
-desired_clusters = ["cluster_1"]
-filters = {
-    "write_alias_only": None,
-    "min_age": 10,
-    "max_age": None,
-    "min_index_size": None,
-    "max_index_size": None,
-    "min_shard_size": "100kb",
-    "max_shard_size": None,
-    "min_doc_count": None,
-    "max_doc_count": None,
-    "type_filter": ["SYSTEM"],
-}
+
+cluster_selection = ["stage", "prod-jfk"]
+selected_clusters = optic.get_selected_clusters(
+    optic.ClusterConfig(cluster_config), cluster_selection
+)
+
 sort_by = ["age"]
-types_dict = {
-  "ISM": '(.*)-ism-(\\d{6})$',
-  "ISM_MALFORMED": '(.*)-ism$',
-  "SYSTEM": '(^\\..*)$',
-  "DATED": '(.*)-(\\d{4})\\.(\\d{2})\\.(\\d{2})$',
+filters = {'max_age': 10}
+optic_settings = {
+    'search_pattern': '*departure*',
+    'index_type_patterns': {'ISM': '(.*)-ism-(\\d{6})$'}
 }
-desired_cluster_properties = {
-    "index_search_pattern": "*",
-    "index_types_dict": types_dict,
-}
-cluster_generator = optic.ClusterConfig(cluster_info, desired_clusters, desired_cluster_properties)
-index_info_response = optic.get_index_info(cluster_generator, filters, sort_by)
+
+for cluster in selected_clusters:
+    optic.configure_cluster(cluster, optic_settings)
+
+index_info = optic.get_index_info(selected_clusters, filters, sort_by)
+
 print("INDEX INFORMATION")
-print(json.dumps(index_info_response, indent=3))
+print(json.dumps(index_info, indent=3))
 ```
 
 ### get_alias_info()
-Properties specific to get_alias_info are:
+Properties specific to `get_alias_info` are:
 
-    index_search_pattern - specify a glob search pattern for the query
+    search_pattern - specify a glob search pattern for the query
 
 The sample code below queries alias information from a selection of clusters and prints the results:
 ```python
 import optic
 import json
 
-cluster_info = {
-    "clusters": {
-        "cluster_1": {
-            "url" : "https://exampleurl.com",
-            "username": "example_username",
-            "password": "****",
-            "verify_ssl": False
-        },
-        "cluster_2": {
-            "url" : "https://exampleurl2.com",
-            "username": "example_username",
-            "password": "****",
-        },
-        "cluster_3": {
-            "url" : "https://exampleurl3.com",
-            "username": "example_username",
-            "password": "****",
-        },
-        "cluster_4": {
-            "url" : "https://exampleurl4.com",
-            "username": "example_username",
-            "password": "****",
-        }
-    },
-    "groups": {
-        "group1": [
-            "cluster_3",
-            "cluster_4"
-        ],
-        "g2": [
-            "cluster_2",
-            "cluster_3"
-        ]
+cluster = optic.Cluster(**{
+    "name": "stage-jfk",
+    "url": "https://stage-jfk.example.com:9200",
+    "auth" : {"password": "*******", "username": "oracle"},
+    "search_pattern": '*air*'
     }
-}
-desired_clusters = ["cluster_3", "g2"]
-desired_cluster_properties = {
-    "index_search_pattern": "*",
-}
-cluster_generator = optic.ClusterConfig(cluster_info, desired_clusters, desired_cluster_properties)
+)
 
-cluster_info_response = optic.get_alias_info(cluster_generator)
+alias_info = optic.get_alias_info([cluster])
 print("ALIAS INFORMATION")
-print(json.dumps(cluster_info_response, indent=3))
+print(json.dumps(alias_info, indent=3))
 ```
 
 

@@ -192,14 +192,14 @@ def filter_and_sort_indices(cluster_list, filters, sort_by) -> list:
     return index_list
 
 
-def get_index_info(config_info, filters=None, sort_by=None) -> list:
+def get_index_info(clusters, filters=None, sort_by=None) -> list:
     """
     Retrieves and packages Index information into a list of dictionaries
 
-    :param ClusterConfig config_info: Cluster Configuration info object
-    :param dict filters: dictionary with filter information
+    :param list clusters: list of Cluster type objects
+    :param dict filters: dictionary with filter configuration
     :param list sort_by: tuple with desired sort types
-    :return: list of dictionaries containing index information
+    :return: list of dictionaries containing cluster information
     :rtype: list
     """
     if filters is None:
@@ -217,9 +217,7 @@ def get_index_info(config_info, filters=None, sort_by=None) -> list:
         }
     if sort_by is None:
         sort_by = []
-    index_list = filter_and_sort_indices(
-        config_info.selected_cluster_objects, filters, sort_by
-    )
+    index_list = filter_and_sort_indices(clusters, filters, sort_by)
     index_dicts = []
     for index in index_list:
         index_dicts.append(

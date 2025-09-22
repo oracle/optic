@@ -42,7 +42,9 @@ def mock_shell_configuration_file_path(temp_dir):
 
 class TestInitialize:
 
-    def test_initialize_optic(self, mocker):
+    def test_initialize_optic(
+        self, mocker, optic_settings_file_path, cluster_config_file_path
+    ):
         # Mock setup_cluster_config, setup_settings, and setup_shell_completion
         mock_setup_cluster_config = mocker.patch(
             "optic.initialize.initialize_service.setup_cluster_config"
@@ -54,61 +56,54 @@ class TestInitialize:
             "optic.initialize.initialize_service.setup_shell_completion"
         )
 
-        initialize_optic()
+        initialize_optic(optic_settings_file_path, cluster_config_file_path)
 
         # Check if the mocked functions were called
         mock_setup_cluster_config.assert_called_once()
         mock_setup_settings.assert_called_once()
         mock_setup_shell_completion.assert_called_once()
 
-    def test_setup_cluster_config_file_create(self, mocker, temp_dir):
-        mock_dir = f"{temp_dir}/optic"
-        mocker.patch.object(initialize_service, "CONFIG_BASE_DIR", mock_dir)
+    def test_setup_cluster_config_file_create(self, mocker, cluster_config_file_path):
 
         # Mock "Y" input
         mocker.patch(
             "optic.initialize.initialize_service.prompt_question", return_value=True
         )
 
-        setup_cluster_config()
+        setup_cluster_config(cluster_config_file_path)
 
         # Assert cluster_config file was created
-        assert validate_file_exists(f"{mock_dir}/cluster-config.yaml")
+        assert validate_file_exists(cluster_config_file_path)
 
     def test_setup_cluster_config_file_exists(
-        self, mocker, cluster_config_file_path, temp_dir, capsys
+        self, cluster_config_file_path, capsys, cluster_config_file
     ):
-        mocker.patch.object(initialize_service, "CONFIG_BASE_DIR", temp_dir)
-
-        setup_cluster_config()
+        setup_cluster_config(cluster_config_file_path)
 
         captured = capsys.readouterr()
+        print(captured)
         assert (
             f"Cluster configuration file: {OPTIC_COLOR.OK_CYAN}{cluster_config_file_path}{OPTIC_COLOR.STOP} "
             "already exists" in captured.out
         )
 
-    def test_setup_settings_file_create(self, mocker, temp_dir):
-        mock_dir = f"{temp_dir}/optic"
-        mocker.patch.object(initialize_service, "CONFIG_BASE_DIR", mock_dir)
+    def test_setup_settings_file_create(self, mocker, optic_settings_file_path):
 
         # Mock "Y" input
         mocker.patch(
             "optic.initialize.initialize_service.prompt_question", return_value=True
         )
 
-        setup_settings()
+        setup_settings(optic_settings_file_path)
 
         # Assert settings file was created
-        assert validate_file_exists(f"{mock_dir}/optic-settings.yaml")
+        assert validate_file_exists(optic_settings_file_path)
 
     def test_setup_settings_file_exists(
-        self, mocker, optic_settings_file_path, temp_dir, capsys
+        self, optic_settings_file_path, capsys, optic_settings_file
     ):
-        mocker.patch.object(initialize_service, "CONFIG_BASE_DIR", temp_dir)
 
-        setup_settings()
-
+        setup_settings(optic_settings_file_path)
         captured = capsys.readouterr()
         assert (
             f"Settings file: {OPTIC_COLOR.OK_CYAN}{optic_settings_file_path}{OPTIC_COLOR.STOP} already exists"
@@ -213,7 +208,11 @@ class TestInitialize:
         assert "Shell completion is already setup" in captured.out
 
     def test_validate_file_exists_success(
-        self, cluster_config_file_path, optic_settings_file_path
+        self,
+        cluster_config_file_path,
+        optic_settings_file_path,
+        optic_settings_file,
+        cluster_config_file,
     ):
         assert validate_file_exists(cluster_config_file_path)
         assert validate_file_exists(optic_settings_file_path)

@@ -13,13 +13,13 @@ from optic.common.exceptions import OpticDataError
 
 
 class IndexInfo:
-    def __init__(self, index_types_dict=None, **kwargs):
+    def __init__(self, index_type_patterns=None, **kwargs):
         self.index = None
         self.pri = None
         self._age = None
         self._shard_size = None
         self._index_type = None
-        self.index_types_dict = index_types_dict
+        self.index_type_patterns = index_type_patterns or {}
         self._set_properties_from_response(**kwargs)
 
     def _set_properties_from_response(self, **kwargs) -> None:
@@ -54,7 +54,7 @@ class IndexInfo:
         :return: index type string
         :rtype: str
         """
-        for type_name, reg_ex in self.index_types_dict.items():
+        for type_name, reg_ex in self.index_type_patterns.items():
             if re.match(reg_ex, self.index):
                 return type_name
         return "UNDEFINED"
@@ -143,13 +143,13 @@ class Index:
         cluster_name=None,
         index_name=None,
         write_alias=None,
-        index_types_dict=None,
+        index_type_patterns=None,
         info_response=None,
     ):
         self.cluster_name = cluster_name
         self.name = index_name
         self.write_alias = write_alias
-        self.index_types_dict = index_types_dict
+        self.index_type_patterns = index_type_patterns
         self.info_response = info_response
         self._info = None
 
@@ -163,6 +163,6 @@ class Index:
         """
         if not self._info:
             self._info = IndexInfo(
-                index_types_dict=self.index_types_dict, **self.info_response
+                index_type_patterns=self.index_type_patterns, **self.info_response
             )
         return self._info

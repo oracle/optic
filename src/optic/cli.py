@@ -8,49 +8,81 @@ import click
 from click import Option
 
 from optic.alias.alias_service import get_alias_info, print_alias_info
-from optic.cluster.cluster_service import get_cluster_info, print_cluster_info
-from optic.common.config import ClusterConfig, Settings, yaml_load
-from optic.common.exceptions import OpticError
+from optic.cluster.cluster import configure_cluster
+from optic.cluster.cluster_service import (
+    get_cluster_info,
+    get_selected_clusters,
+    print_cluster_info,
+)
+from optic.common.config import OpticSettings, read_cluster_config, yaml_load
+from optic.common.exceptions import OpticConfigurationFileError, OpticError
 from optic.index.index_service import get_index_info, print_index_info
 from optic.initialize.initialize_service import initialize_optic
 
 
-def default_from_settings(setting_name) -> type[Option] | None:
+def read_optic_settings(ctx):
+    try:
+        ctx.obj["optic_settings"].update(
+            OpticSettings(
+                yaml_load(ctx.obj["optic_settings"]["optic_settings_file_path"])
+            ).fields
+        )
+    except OpticConfigurationFileError as e:
+        print(e)
+        exit(1)
+    return ctx.obj["optic_settings"]
+
+
+def read_cluster_configuration(cluster_config_file_path):
+    try:
+        cluster_config = read_cluster_config(cluster_config_file_path)
+    except OpticConfigurationFileError as e:
+        print(e)
+        exit(1)
+
+    return cluster_config
+
+
+def get_default_from_optic_settings(setting_name) -> type[Option] | None:
     """
-    Constructs custom class to define some Click Option behaviors
-    :param string setting_name: name of the setting needed for Click option default
-    :return: class to override some Click Option behaviors
+    Constructs custom class to support default values for cli options
+    :param string setting_name: name of the setting that drives default option value
+    :return: class with get_default method
     :rtype: type[Option] | None
     """
 
-    class OptionDefaultFromSettings(click.Option):
+    class OptionDefaultFromOpticSettings(click.Option):
         def get_default(self, ctx, call=True):
             try:
                 if not ctx.obj:
                     # Dummy so shell completion works before setting Settings context
                     self.default = None
                 else:
-                    self.default = ctx.obj[setting_name]
+                    self.default = ctx.obj["optic_settings"][setting_name]
             except KeyError:
-                print(setting_name, "not found in specified settings file")
+                print(
+                    f"[{setting_name}] attribute not found in optic settings file "
+                    f'[{ctx.obj["optic_settings"]["optic_settings_file_path"]}]'
+                )
                 exit(1)
-            return super(OptionDefaultFromSettings, self).get_default(ctx)
+            return super(OptionDefaultFromOpticSettings, self).get_default(ctx)
 
-    return OptionDefaultFromSettings
+    return OptionDefaultFromOpticSettings
 
 
 # BEGIN: OPTIC Entry Point
-@click.group(help="optic: Opensearch Tools for Indices and Cluster")
+@click.group(help="optic: OpenSearch Tools for Indices and Cluster")
 @click.option(
     "--settings",
+    "optic_settings_file_path",
     default="~/.optic/optic-settings.yaml",
-    help="specify a non-default settings file path "
-    "(default is ~/.optic/optic-settings.yaml",
+    help="specify a non-default optic settings file",
+    show_default=True,
 )
 @click.pass_context
-def cli(ctx, settings):
+def cli(ctx, optic_settings_file_path):
+    ctx.obj = {"optic_settings": {"optic_settings_file_path": optic_settings_file_path}}
     ctx.ensure_object(dict)
-    ctx.obj["settings_file_path"] = settings
 
 
 # END: OPTIC Entry Point
@@ -58,10 +90,22 @@ def cli(ctx, settings):
 
 # BEGIN: initialize command (No tool domain)
 @cli.command()
-def init():
+@click.option(
+    "--cluster-config",
+    "cluster_config_file_path",
+    default="~/.optic/cluster-config.yaml",
+    help="specify a non-default cluster configuration file",
+    show_default=True,
+)
+@click.pass_context
+def init(ctx, cluster_config_file_path):
     """Initialize OPTIC settings,  configuration, and shell completion"""
+
+    optic_settings = ctx.obj["optic_settings"]
     try:
-        initialize_optic()
+        initialize_optic(
+            optic_settings["optic_settings_file_path"], cluster_config_file_path
+        )
     except OpticError as e:
         print(e)
         exit(1)
@@ -71,71 +115,52 @@ def init():
 
 
 # BEGIN: Cluster Tool Domain
-@cli.group(help="cluster: Tool domain containing tools related to OpenSearch clusters")
+@cli.group(help="cluster: actions related to OpenSearch clusters")
 @click.pass_context
 def cluster(ctx):
+    read_optic_settings(ctx)
     ctx.ensure_object(dict)
-    try:
-        settings = Settings(yaml_load(ctx.obj["settings_file_path"]))
-        ctx.obj = settings.fields
-    except OpticError as e:
-        print(e)
-        exit(1)
 
 
 # BEGIN: Info Tool
 @cluster.command()
 @click.option(
+    "--cluster-config",
+    "cluster_config_file_path",
+    cls=get_default_from_optic_settings("cluster_config_file_path"),
+    help="specify a non-default cluster configuration file",
+    show_default=True,
+)
+@click.option(
     "-c",
-    "--clusters",
+    "--cluster",
+    "cluster_selection",
     multiple=True,
     default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
-)
-@click.option(
-    "--cluster-config",
-    cls=default_from_settings("default_cluster_config_file_path"),
-    help="specify a non-default configuration file path "
-    "(default is default_cluster_config_file_path field in settings yaml file",
-)
-@click.option(
-    "--byte-type",
-    cls=default_from_settings("default_cluster_info_byte_type"),
-    type=click.Choice(["mb", "gb"], case_sensitive=False),
-    help="specify the mb or gb type for storage calculation "
-    "(default is default_cluster_info_byte_type in settings yaml file)",
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. ",
 )
 @click.option(
     "--no-color",
     is_flag=True,
-    cls=default_from_settings("disable_terminal_color"),
-    help="disable terminal color output (default is disable_terminal_color"
-    " in settings yaml file)",
-)
-@click.option(
-    "--storage-percent-thresholds",
-    type=dict,
-    cls=default_from_settings("storage_percent_thresholds"),
-    help="specify thresholds for storage % coloring.  "
-    "**THIS SHOULD BE DONE UNDER THE storage_percent_thresholds "
-    "FIELD IN THE SETTINGS YAML FILE, NOT ON CL**",
+    cls=get_default_from_optic_settings("disable_terminal_color"),
+    help="disable terminal color output",
+    show_default=True,
 )
 @click.pass_context
-def info(
-    ctx, clusters, cluster_config, byte_type, no_color, storage_percent_thresholds
-):
+def info(ctx, cluster_config_file_path, cluster_selection, no_color):
+
+    optic_settings = ctx.obj["optic_settings"]
+    optic_settings["no_color"] = no_color
+    cluster_config = read_cluster_configuration(cluster_config_file_path)
+
     """Prints status of all clusters in configuration file"""
     try:
-        desired_clusters = list(clusters)
-        desired_cluster_properties = {"byte_type": byte_type}
-        config_info = ClusterConfig(
-            yaml_load(cluster_config), desired_clusters, desired_cluster_properties
+        selected_clusters = get_selected_clusters(
+            cluster_config, list(cluster_selection)
         )
-        cluster_info_list = get_cluster_info(config_info)
-        print_cluster_info(cluster_info_list, no_color, storage_percent_thresholds)
+        cluster_info = get_cluster_info(selected_clusters)
+        print_cluster_info(cluster_info, optic_settings)
     except OpticError as e:
         print(e)
         exit(1)
@@ -146,36 +171,44 @@ def info(
 
 
 # BEGIN: Index Tool Domain
-@cli.group(help="index: Tool domain containing tools related to OpenSearch indices")
+@cli.group(help="actions related to OpenSearch indices")
 @click.pass_context
 def index(ctx):
+    read_optic_settings(ctx)
     ctx.ensure_object(dict)
-    try:
-        settings = Settings(yaml_load(ctx.obj["settings_file_path"]))
-        ctx.obj = settings.fields
-    except OpticError as e:
-        print(e)
-        exit(1)
 
 
 # BEGIN: Info Tool
 @index.command()
 @click.option(
+    "--cluster-config",
+    "cluster_config_file_path",
+    cls=get_default_from_optic_settings("cluster_config_file_path"),
+    help="specify a non-default cluster configuration file",
+    show_default=True,
+)
+@click.option(
     "-c",
-    "--clusters",
+    "--cluster",
+    "cluster_selection",
     multiple=True,
     default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. ",
 )
 @click.option(
     "-p",
     "--search-pattern",
-    cls=default_from_settings("default_search_pattern"),
-    help="specify a glob search pattern for indices (default is"
-    " default_search_pattern field in settings yaml file)",
+    cls=get_default_from_optic_settings("search_pattern"),
+    help="specify a glob search pattern for indices",
+    show_default=True,
+)
+@click.option(
+    "--no-color",
+    is_flag=True,
+    cls=get_default_from_optic_settings("disable_terminal_color"),
+    help="disable terminal color output",
+    show_default=True,
 )
 @click.option(
     "-w",
@@ -184,31 +217,25 @@ def index(ctx):
     default=None,
     help="filter to only display indices that are targets of write aliases",
 )
-@click.option(
-    "--cluster-config",
-    cls=default_from_settings("default_cluster_config_file_path"),
-    help="specify a non-default configuration file path "
-    "(default is default_cluster_config_file_path field in settings yaml file)",
-)
 @click.option("--min-age", type=int, help="minimum age of index")
 @click.option("--max-age", type=int, help="maximum age of index")
 @click.option(
     "--min-index-size",
-    help="filter by minimum size of index (accepts kb, mb, gb, tb) Eg: 1mb",
+    help="filter by minimum size of index (accepts kb, mb, gb, tb) Example: 1mb",
 )
 @click.option(
     "--max-index-size",
-    help="filter by maximum size of index (accepts kb, mb, gb, tb) Eg: 10gb",
+    help="filter by maximum size of index (accepts kb, mb, gb, tb) Example: 10gb",
 )
 @click.option(
     "--min-shard-size",
     help="filter by minimum average size of index primary shards "
-    "(accepts kb, mb, gb, tb) Eg: 1mb",
+    "(accepts kb, mb, gb, tb) Example: 1mb",
 )
 @click.option(
     "--max-shard-size",
     help="filter by maximum average size of index primary shards "
-    "(accepts kb, mb, gb, tb) Eg: 10gb",
+    "(accepts kb, mb, gb, tb) Example: 10gb",
 )
 @click.option("--min-doc-count", type=int, help="filter by minimum number of documents")
 @click.option("--max-doc-count", type=int, help="filter by maximum number of documents")
@@ -219,7 +246,7 @@ def index(ctx):
     default=(),
     type=str,
     help="specify the index types to exclude.  "
-    "Supports multiple exclusions Eg: -t ISM -t SYSTEM",
+    "Supports multiple exclusions Example: -t ISM -t SYSTEM",
 )
 @click.option(
     "-s",
@@ -242,26 +269,11 @@ def index(ctx):
     ),
     help="Specify field(s) to sort by",
 )
-@click.option(
-    "--index-types",
-    type=dict,
-    cls=default_from_settings("default_index_type_patterns"),
-    help="specify regular expression search pattern for index types.  "
-    "**THIS SHOULD BE DONE UNDER THE default_index_type_patterns "
-    "FIELD IN THE SETTINGS YAML FILE, NOT ON CL**",
-)
-@click.option(
-    "--no-color",
-    is_flag=True,
-    cls=default_from_settings("disable_terminal_color"),
-    help="disable terminal color output (default is disable_terminal_color"
-    " in settings yaml file)",
-)
 @click.pass_context
 def info(
     ctx,
-    cluster_config,
-    clusters,
+    cluster_config_file_path,
+    cluster_selection,
     search_pattern,
     write_alias_only,
     min_age,
@@ -274,9 +286,17 @@ def info(
     max_doc_count,
     type_filter,
     sort_by,
-    index_types,
     no_color,
 ):
+
+    # the initial settings and defaults are read from the optic settings file
+    # they are then overridden with any command line arguments that are passed
+
+    optic_settings = ctx.obj["optic_settings"]
+    optic_settings["no_color"] = no_color
+    optic_settings["search_pattern"] = search_pattern
+    cluster_config = read_cluster_configuration(cluster_config_file_path)
+
     """Get Index information"""
     try:
         filters = {
@@ -292,16 +312,15 @@ def info(
             "type_filter": list(type_filter),
         }
         sort_by = list(sort_by)
-        desired_clusters = list(clusters)
-        desired_cluster_properties = {
-            "index_search_pattern": search_pattern,
-            "index_types_dict": index_types,
-        }
-        config_info = ClusterConfig(
-            yaml_load(cluster_config), desired_clusters, desired_cluster_properties
+        selected_clusters = get_selected_clusters(
+            cluster_config, list(cluster_selection)
         )
-        index_info_dict = get_index_info(config_info, filters, sort_by)
-        print_index_info(index_info_dict, no_color)
+
+        for cluster in selected_clusters:
+            configure_cluster(cluster, optic_settings)
+
+        index_info = get_index_info(selected_clusters, filters, sort_by)
+        print_index_info(index_info, optic_settings)
     except OpticError as e:
         print(e)
         exit(1)
@@ -312,63 +331,65 @@ def info(
 
 
 # BEGIN: Alias Tool Domain
-@cli.group(help="alias: Tool domain containing tools related to OpenSearch aliases")
+@cli.group(help="alias: actions related to OpenSearch aliases")
 @click.pass_context
 def alias(ctx):
+    read_optic_settings(ctx)
     ctx.ensure_object(dict)
-    try:
-        settings = Settings(yaml_load(ctx.obj["settings_file_path"]))
-        ctx.obj = settings.fields
-    except OpticError as e:
-        print(e)
-        exit(1)
 
 
 # BEGIN: Info Tool
 @alias.command()
 @click.option(
-    "-c",
-    "--clusters",
-    multiple=True,
-    default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+    "--cluster-config",
+    "cluster_config_file_path",
+    cls=get_default_from_optic_settings("cluster_config_file_path"),
+    help="specify a non-default cluster configuration file",
+    show_default=True,
 )
 @click.option(
-    "--cluster-config",
-    cls=default_from_settings("default_cluster_config_file_path"),
-    help="specify a non-default configuration file path "
-    "(default is default_cluster_config_file_path field in settings yaml file",
+    "-c",
+    "--cluster",
+    "cluster_selection",
+    multiple=True,
+    default=(),
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. ",
 )
 @click.option(
     "-p",
     "--search-pattern",
-    cls=default_from_settings("default_search_pattern"),
-    help="specify a glob search pattern for aliases (default is"
-    " default_search_pattern field in settings yaml file)",
+    cls=get_default_from_optic_settings("search_pattern"),
+    help="specify a glob search pattern for indices",
+    show_default=True,
 )
 @click.option(
     "--no-color",
     is_flag=True,
-    cls=default_from_settings("disable_terminal_color"),
-    help="disable terminal color output (default is disable_terminal_color"
-    " in settings yaml file)",
+    cls=get_default_from_optic_settings("disable_terminal_color"),
+    help="disable terminal color output",
+    show_default=True,
 )
 @click.pass_context
-def info(ctx, clusters, cluster_config, search_pattern, no_color):
+def info(ctx, cluster_config_file_path, cluster_selection, search_pattern, no_color):
     """Prints information about aliases in use"""
+
+    optic_settings = ctx.obj["optic_settings"]
+    optic_settings["no_color"] = no_color
+    optic_settings["search_pattern"] = search_pattern
+    cluster_config = read_cluster_configuration(cluster_config_file_path)
+
     try:
-        desired_clusters = list(clusters)
-        desired_cluster_properties = {
-            "index_search_pattern": search_pattern,
-        }
-        config_info = ClusterConfig(
-            yaml_load(cluster_config), desired_clusters, desired_cluster_properties
+        cluster_config = read_cluster_config(cluster_config_file_path)
+        selected_clusters = get_selected_clusters(
+            cluster_config, list(cluster_selection)
         )
-        alias_info_list = get_alias_info(config_info)
-        print_alias_info(alias_info_list, no_color)
+
+        for cluster in selected_clusters:
+            configure_cluster(cluster, optic_settings)
+
+        alias_info = get_alias_info(selected_clusters)
+        print_alias_info(alias_info, no_color)
     except OpticError as e:
         print(e)
         exit(1)

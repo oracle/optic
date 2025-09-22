@@ -4,6 +4,8 @@ import tempfile
 import pytest
 import yaml
 
+from optic.common.config import ClusterConfig
+
 
 @pytest.fixture
 def temp_dir():
@@ -16,9 +18,18 @@ def temp_dir():
 
 @pytest.fixture
 def cluster_config_file_path(temp_dir):
-    settings_file_path = f"{temp_dir}/cluster-config.yaml"
+    return f"{temp_dir}/cluster-config.yaml"
 
-    with open(settings_file_path, "w") as f:
+
+@pytest.fixture
+def optic_settings_file_path(temp_dir):
+    return f"{temp_dir}/optic-settings.yaml"
+
+
+@pytest.fixture
+def cluster_config_file(cluster_config_file_path):
+
+    with open(cluster_config_file_path, "w") as f:
         yaml.dump(
             {
                 "clusters": {
@@ -55,43 +66,41 @@ def cluster_config_file_path(temp_dir):
             f,
         )
 
-    yield settings_file_path
+    yield cluster_config_file_path
 
 
 @pytest.fixture
-def optic_settings_file_path(temp_dir, cluster_config_file_path):
-    settings_file_path = f"{temp_dir}/optic-settings.yaml"
+def optic_settings_file(optic_settings_file_path, cluster_config_file_path):
 
-    with open(settings_file_path, "w") as f:
+    with open(optic_settings_file_path, "w") as f:
         yaml.dump(
             {
-                "default_cluster_config_file_path": cluster_config_file_path,
-                "default_cluster_info_byte_type": "gb",
-                "default_index_type_patterns": {
+                "cluster_config_file_path": cluster_config_file_path,
+                "disable_terminal_color": False,
+                "search_pattern": "*",
+                "byte_type": "gb",
+                "storage_percent_thresholds": {"GREEN": 80, "RED": 100, "YELLOW": 85},
+                "index_type_patterns": {
                     "DATED": r"(.*)-(\d{4})\.(\d{2})\.(\d{2})$",
                     "ISM": r"(.*)-ism-(\d{6})$",
                     "ISM_MALFORMED": "(.*)-ism$",
                     "STATIC": "(.*)_static(.*)$",
                     "SYSTEM": r"(^\..*)$",
                 },
-                "default_search_pattern": "*",
-                "disable_terminal_color": False,
-                "settings_file_path": {settings_file_path},
-                "storage_percent_thresholds": {"GREEN": 80, "RED": 100, "YELLOW": 85},
             },
             f,
         )
 
-    yield settings_file_path
+    yield optic_settings_file_path
 
 
 @pytest.fixture
-def optic_settings(optic_settings_file_path) -> dict:
-    with open(optic_settings_file_path, "r") as f:
+def optic_settings(optic_settings_file) -> dict:
+    with open(optic_settings_file, "r") as f:
         return yaml.safe_load(f)
 
 
 @pytest.fixture
-def cluster_config(cluster_config_file_path) -> dict:
-    with open(cluster_config_file_path, "r") as f:
-        return yaml.safe_load(f)
+def cluster_config(cluster_config_file) -> dict:
+    with open(cluster_config_file, "r") as f:
+        return ClusterConfig(yaml.safe_load(f))

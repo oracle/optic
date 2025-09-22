@@ -4,7 +4,6 @@ import dateutil.parser
 import pytest
 
 from optic.cluster.cluster import Cluster
-from optic.common.config import ClusterConfig
 from optic.common.exceptions import OpticDataError
 from optic.index.index import Index
 from optic.index.index_service import (
@@ -46,8 +45,7 @@ class TestIndexService:
         parse_bytes_exception_cases()
 
     def test_get_index_info(self):
-        config_info = ClusterConfig({}, [], {})
-        test_cluster = Cluster(custom_name="test_cluster")
+        test_cluster = Cluster(name="test_cluster")
         test_cluster._index_list = []
         sim_response = {
             "health": "yellow",
@@ -62,17 +60,15 @@ class TestIndexService:
             "pri.store.size": "954kb",
             "creation.date.string": "2024-06-04T15:17:41.806Z",
         }
-        test_index_types = {"STOCK": "(.*)ocki(.*)$"}
+        test_index_type_patterns = {"STOCK": "(.*)ocki(.*)$"}
         test_index = Index(
             cluster_name="test_cluster",
-            index_types_dict=test_index_types,
+            index_type_patterns=test_index_type_patterns,
             info_response=sim_response,
         )
         test_cluster._index_list.append(test_index)
 
-        test_cluster_list = [test_cluster]
-        config_info._selected_cluster_objects = test_cluster_list
-        dict_response = get_index_info(config_info)
+        dict_response = get_index_info([test_cluster])
         assert dict_response[0]["name"] == "stockindex"
         assert (
             dict_response[0]["age"]

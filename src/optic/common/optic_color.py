@@ -27,6 +27,7 @@ class OpticColor:
         :rtype: None
         """
         for attr, value in self.__dict__.items():
+            print(attr, value)
             if (
                 isinstance(value, str)
                 and value.startswith("\033[")
