@@ -60,40 +60,12 @@ class TestCli:
         )
         mock_exit.assert_called_once_with(1)
 
-    def test_alias_tool_usage_display(self, ctx_obj, runner):
-        result = runner.invoke(cli, ["alias"], obj=ctx_obj)
-        assert result.exit_code == 0
-        assert (
-            "alias: Tool domain containing tools related to OpenSearch aliases"
-            in result.output
-        )
+    def test_init_command_success(self, mocker, runner):
+        mock_initialize_optic = mocker.patch("optic.cli.initialize_optic")
+        runner.invoke(cli, ["init"])
+        mock_initialize_optic.assert_called_once()
 
-    def test_alias_info_command_success(
-        self,
-        mocker,
-        runner,
-        optic_settings_file_path,
-        optic_settings_file,
-        cluster_config_file,
-    ):
-        mock_get_selected_clusters = mocker.patch("optic.cli.get_selected_clusters")
-        mock_get_alias_info = mocker.patch("optic.cli.get_alias_info")
-
-        runner.invoke(
-            cli,
-            [
-                "--settings",
-                optic_settings_file_path,
-                "alias",
-                "info",
-                "--cluster",
-                "cluster_1",
-            ],
-        )
-        mock_get_selected_clusters.assert_called_once()
-        mock_get_alias_info.assert_called_once()
-
-    def test_cluster_tool_fail(self, runner, mock_exit):
+    def test_cluster_info_tool_missing_both_yaml_files(self, runner, mock_exit):
         runner.invoke(
             cli,
             [
@@ -107,7 +79,7 @@ class TestCli:
         )
         mock_exit.assert_called_once_with(1)
 
-    def test_cluster_info_command_fail(
+    def test_cluster_info_tool_missing_cluster_config_file(
         self, mocker, runner, optic_settings_file_path, mock_exit
     ):
         runner.invoke(
@@ -142,6 +114,36 @@ class TestCli:
         )
         mock_get_selected_clusters.assert_called_once()
         mock_get_cluster_info.assert_called_once()
+
+    def test_alias_tool_usage_display(self, ctx_obj, runner):
+        result = runner.invoke(cli, ["alias"], obj=ctx_obj)
+        assert result.exit_code == 0
+        assert "alias: actions related to OpenSearch aliases" in result.output
+
+    def test_alias_info_command_success(
+        self,
+        mocker,
+        runner,
+        optic_settings_file_path,
+        optic_settings_file,
+        cluster_config_file,
+    ):
+        mock_get_selected_clusters = mocker.patch("optic.cli.get_selected_clusters")
+        mock_get_alias_info = mocker.patch("optic.cli.get_alias_info")
+
+        runner.invoke(
+            cli,
+            [
+                "--settings",
+                optic_settings_file_path,
+                "alias",
+                "info",
+                "--cluster",
+                "cluster_1",
+            ],
+        )
+        mock_get_selected_clusters.assert_called_once()
+        mock_get_alias_info.assert_called_once()
 
     def test_alias_info_tool_missing_both_yaml_files(self, runner, mock_exit):
         runner.invoke(
@@ -206,11 +208,6 @@ class TestCli:
         assert mock_configure_cluster.call_count == 2
         mock_get_index_info.assert_called_once()
         mock_print_index_info.assert_called_once()
-
-    def test_init_command_success(self, mocker, runner):
-        mock_initialize_optic = mocker.patch("optic.cli.initialize_optic")
-        runner.invoke(cli, ["init"])
-        mock_initialize_optic.assert_called_once()
 
     def test_option_get_default_from_optic_settings_absent(self, ctx_obj):
         context = click.Context(cli.commands["alias"].commands["info"], obj=ctx_obj)

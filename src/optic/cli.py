@@ -115,7 +115,7 @@ def init(ctx, cluster_config_file_path):
 
 
 # BEGIN: Cluster Tool Domain
-@cli.group(help="cluster: Tool domain containing tools related to OpenSearch clusters")
+@cli.group(help="cluster: actions related to OpenSearch clusters")
 @click.pass_context
 def cluster(ctx):
     read_optic_settings(ctx)
@@ -137,10 +137,8 @@ def cluster(ctx):
     "cluster_selection",
     multiple=True,
     default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. ",
 )
 @click.option(
     "--no-color",
@@ -173,7 +171,7 @@ def info(ctx, cluster_config_file_path, cluster_selection, no_color):
 
 
 # BEGIN: Index Tool Domain
-@cli.group(help="index: Tool domain containing tools related to OpenSearch indices")
+@cli.group(help="actions related to OpenSearch indices")
 @click.pass_context
 def index(ctx):
     read_optic_settings(ctx)
@@ -195,10 +193,8 @@ def index(ctx):
     "cluster_selection",
     multiple=True,
     default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. ",
 )
 @click.option(
     "-p",
@@ -225,21 +221,21 @@ def index(ctx):
 @click.option("--max-age", type=int, help="maximum age of index")
 @click.option(
     "--min-index-size",
-    help="filter by minimum size of index (accepts kb, mb, gb, tb) Eg: 1mb",
+    help="filter by minimum size of index (accepts kb, mb, gb, tb) Example: 1mb",
 )
 @click.option(
     "--max-index-size",
-    help="filter by maximum size of index (accepts kb, mb, gb, tb) Eg: 10gb",
+    help="filter by maximum size of index (accepts kb, mb, gb, tb) Example: 10gb",
 )
 @click.option(
     "--min-shard-size",
     help="filter by minimum average size of index primary shards "
-    "(accepts kb, mb, gb, tb) Eg: 1mb",
+    "(accepts kb, mb, gb, tb) Example: 1mb",
 )
 @click.option(
     "--max-shard-size",
     help="filter by maximum average size of index primary shards "
-    "(accepts kb, mb, gb, tb) Eg: 10gb",
+    "(accepts kb, mb, gb, tb) Example: 10gb",
 )
 @click.option("--min-doc-count", type=int, help="filter by minimum number of documents")
 @click.option("--max-doc-count", type=int, help="filter by maximum number of documents")
@@ -250,7 +246,7 @@ def index(ctx):
     default=(),
     type=str,
     help="specify the index types to exclude.  "
-    "Supports multiple exclusions Eg: -t ISM -t SYSTEM",
+    "Supports multiple exclusions Example: -t ISM -t SYSTEM",
 )
 @click.option(
     "-s",
@@ -335,7 +331,7 @@ def info(
 
 
 # BEGIN: Alias Tool Domain
-@cli.group(help="alias: Tool domain containing tools related to OpenSearch aliases")
+@cli.group(help="alias: actions related to OpenSearch aliases")
 @click.pass_context
 def alias(ctx):
     read_optic_settings(ctx)
@@ -357,10 +353,8 @@ def alias(ctx):
     "cluster_selection",
     multiple=True,
     default=(),
-    help="Specify cluster groups and/or specific clusters to query. "
-    "Default behavior queries all clusters present in config file. "
-    "(Entries must be present in config file) Eg: -c my_cluster_group_1"
-    " -c my_cluster_group_2 -c my_cluster_group_4 -c my_cluster",
+    help="filter results to specific cluster(s) and/or group(s). "
+    "Argument can be used multiple times. ",
 )
 @click.option(
     "-p",
