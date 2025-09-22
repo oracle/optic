@@ -191,7 +191,7 @@ groups:
 * A default settings file provided below <mark>can be generated using the `optic init` command</mark> (see: [Initialize OPTIC](#initialize-optic)):
 ```yaml
 # File Paths
-cluster_config_file: ~/.optic/cluster-config.yaml
+cluster_config_file_path: ~/.optic/cluster-config.yaml
 
 # Terminal Customization
 disable_terminal_color: False
@@ -375,7 +375,7 @@ selected_clusters = optic.get_selected_clusters(
 cluster_info = optic.get_cluster_info(selected_clusters)
 
 print("CLUSTER INFORMATION")
-print(json.dumps(cluster_info_response, indent=3))
+print(json.dumps(cluster_info, indent=3))
 ```
 ### get_index_info()
 Properties specific to `get_index_info` are:
@@ -482,7 +482,7 @@ for cluster in selected_clusters:
 index_info = optic.get_index_info(selected_clusters, filters, sort_by)
 
 print("INDEX INFORMATION")
-print(json.dumps(index_info_response, indent=3))
+print(json.dumps(index_info, indent=3))
 ```
 
 ### get_alias_info()
@@ -498,14 +498,14 @@ import json
 cluster = optic.Cluster(**{
     "name": "stage-jfk",
     "url": "https://stage-jfk.example.com:9200",
-    "auth" : {"password": "*******",, "username": "oracle"},
+    "auth" : {"password": "*******", "username": "oracle"},
     "search_pattern": '*air*'
     }
 )
 
 alias_info = optic.get_alias_info([cluster])
 print("ALIAS INFORMATION")
-print(json.dumps(cluster_info_response, indent=3))
+print(json.dumps(alias_info, indent=3))
 ```
 
 
