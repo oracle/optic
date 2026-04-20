@@ -6,6 +6,7 @@ All notable changes to the OPTIC project will be documented in
 this file. This project adheres to [Semantic Versioning](http://semver.org/).
 
 # 2.0.1
+* ci: 👷 Remediate Macaron findings
 * ci: 👷 Macaron check-github-actions
 * style: 🎨 Fit noqa S105 to black standard
 * test: 👷 noqa S105 for tests
