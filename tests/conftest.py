@@ -36,22 +36,22 @@ def cluster_config_file(cluster_config_file_path):
                     "cluster_1": {
                         "url": "https://testurl.com:46",
                         "username": "my_username1",
-                        "password": "my_password",
+                        "password": "my_password",  # noqa: S105
                     },
                     "cluster_2": {
                         "url": "https://myurl.com:9200",
                         "username": "my_username2",
-                        "password": "****",
+                        "password": "****",  # noqa: S105
                     },
                     "my_cluster": {
                         "url": "https://testurl.com:46",
                         "username": "my_username1",
-                        "password": "****",
+                        "password": "****",  # noqa: S105
                     },
                     "cluster_3": {
                         "url": "https://testurl.com:46",
                         "username": "my_username1",
-                        "password": "****",
+                        "password": "****",  # noqa: S105
                     },
                 },
                 "groups": {
